@@ -24,8 +24,11 @@ import datetime
 from timertask import TimerTask
 from bytebuffer import ByteBuffer
 import sys
-from struct import *
-import os, msvcrt
+import os
+import msvcrt
+import cv2
+from subprocess import Popen, PIPE
+
 
 msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
@@ -419,10 +422,16 @@ class Tello:
 # VideoRX Thread
 ###############################################################################
     def _threadVideoRX(self, stop_event, arg):
+        videoPlayer = Popen(
+            ['mplayer', '-fps', '40', '-', '-demuxer', 'h264es', '-cache', '1024', '-cache-min', '5'],
+            stdin=PIPE)
         #print '_threadVideoRX started !!!'
 
         sockVideo = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        addrVideo = ('192.168.10.2', self.TELLO_PORT_VIDEO)
+        addrVideo = ('192.168.10.2',self.TELLO_PORT_VIDEO)
+        #cap = cv2.VideoCapture('udp://192.168.10.2:'+str(self.TELLO_PORT_VIDEO))
+
+
         sockVideo.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sockVideo.settimeout(.5)
         sockVideo.bind(addrVideo)
@@ -430,8 +439,15 @@ class Tello:
         data = bytearray(4096)
         fileVideo = open('video.h264', 'wb')
         isSPSRcvd = False
-        
+        #cap = cv2.VideoCapture('video.h264')
+        #cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('H', '2', '6', '4'))
         while not stop_event.is_set():
+
+            #ret, frame = cap.read()
+            #if ret:
+                #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                #cv2.imshow('frame', gray)
+                #cv2.waitKey(1)
             try:
                 size, addr = sockVideo.recvfrom_into(data)
             except socket.timeout, e:
@@ -450,9 +466,10 @@ class Tello:
                 # drop 2 bytes
                 if isSPSRcvd:
                     fileVideo.write(data[2:size])
-                    #sys.stdout.write(pack(data[2:size]))
-                    #sys.stdout.write(pack(data[2:size]))
-                    sys.stdout.write(data[2:size])
+                    #print 'size written: '+str(size)
+                    #sys.stdout.write(data[2:size])
+
+                    videoPlayer.stdin.write(data[2:size])
 
         sockVideo.close()
         fileVideo.close()
