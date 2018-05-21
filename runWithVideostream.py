@@ -97,7 +97,7 @@ tblKeyFunctions = {
     'a'     : (False, KEY_MASK_A),
     'd'     : (False, KEY_MASK_D),
     'esc'   : (False, KEY_MASK_ESC),
-    'space' : (True,  KEY_MASK_SPC),
+    'ctrl' : (True,  KEY_MASK_SPC),
     '1'     : (True,  KEY_MASK_1),
     '2'     : (True,  KEY_MASK_2),
 }
@@ -122,7 +122,7 @@ print '|      w                   up        |'
 print '|  a       d          left    right  |'
 print '|      s                  down       |'
 print '|                                    |'
-print '|         space(takeoff/land)        |'
+print '|         ctrl (takeoff/land)        |'
 print '|                                    |'
 print '+------------------------------------+'
 
