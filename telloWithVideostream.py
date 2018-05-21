@@ -29,92 +29,106 @@ import msvcrt
 import cv2
 from subprocess import Popen, PIPE
 
-
 msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
+
 class Tello:
+    # TELLO COMMAND
+    TELLO_CMD_CONN = 1
+    TELLO_CMD_CONN_ACK = 2
+    TELLO_CMD_SSID = 17  # pt48
+    TELLO_CMD_SET_SSID = 18  # pt68
+    TELLO_CMD_SSID_PASS = 19  # pt48
+    TELLO_CMD_SET_SSID_PASS = 20  # pt68
+    TELLO_CMD_REGION = 21  # pt48
+    TELLO_CMD_SET_REGION = 22  # pt68
+    TELLO_CMD_REQ_VIDEO_SPS_PPS = 37  # pt60
+    TELLO_CMD_TAKE_PICTURE = 48  # pt68
+    TELLO_CMD_SWITCH_PICTURE_VIDEO = 49  # pt68
+    TELLO_CMD_START_RECORDING = 50  # pt68
+    TELLO_CMD_SET_EV = 52  # pt48
+    TELLO_CMD_DATE_TIME = 70  # pt50
+    TELLO_CMD_STICK = 80  # pt60
+    TELLO_CMD_LOG_HEADER_WRITE = 4176  # pt50
+    TELLO_CMD_LOG_DATA_WRITE = 4177  # RX_O
+    TELLO_CMD_LOG_CONFIGURATION = 4178  # pt50
+    TELLO_CMD_WIFI_SIGNAL = 26  # RX_O
+    TELLO_CMD_VIDEO_BIT_RATE = 40  # pt48
+    TELLO_CMD_LIGHT_STRENGTH = 53  # RX_O
+    TELLO_CMD_VERSION_STRING = 69  # pt48
+    TELLO_CMD_ACTIVATION_TIME = 71  # pt48
+    TELLO_CMD_LOADER_VERSION = 73  # pt48
+    TELLO_CMD_STATUS = 86  # RX_O
+    TELLO_CMD_ALT_LIMIT = 4182  # pt48
+    TELLO_CMD_LOW_BATT_THRESHOLD = 4183  # pt48
+    TELLO_CMD_ATT_ANGLE = 4185  # pt48
+    TELLO_CMD_SET_JPEG_QUALITY = 55  # pt68
+    TELLO_CMD_TAKEOFF = 84  # pt68
+    TELLO_CMD_LANDING = 85  # pt68
+    TELLO_CMD_SET_ALT_LIMIT = 88  # pt68
+    TELLO_CMD_FLIP = 92  # pt70
+    TELLO_CMD_THROW_FLY = 93  # pt48
+    TELLO_CMD_PALM_LANDING = 94  # pt48
+    TELLO_CMD_PLANE_CALIBRATION = 4180  # pt68
+    TELLO_CMD_SET_LOW_BATTERY_THRESHOLD = 4181  # pt68
+    TELLO_CMD_SET_ATTITUDE_ANGLE = 4184  # pt68
+    TELLO_CMD_ERROR1 = 67  # RX_O
+    TELLO_CMD_ERROR2 = 68  # RX_O
+    TELLO_CMD_FILE_SIZE = 98  # pt50
+    TELLO_CMD_FILE_DATA = 99  # pt50
+    TELLO_CMD_FILE_COMPLETE = 100  # pt48
+    TELLO_CMD_HANDLE_IMU_ANGLE = 90  # pt48
+    TELLO_CMD_SET_VIDEO_BIT_RATE = 32  # pt68
+    TELLO_CMD_SET_DYN_ADJ_RATE = 33  # pt68
+    TELLO_CMD_SET_EIS = 36  # pt68
+    TELLO_CMD_SMART_VIDEO_START = 128  # pt68
+    TELLO_CMD_SMART_VIDEO_STATUS = 129  # pt50
+    TELLO_CMD_BOUNCE = 4179  # pt68
 
-# TELLO COMMAND
-    TELLO_CMD_CONN                      = 1         
-    TELLO_CMD_CONN_ACK                  = 2
-    TELLO_CMD_SSID                      = 17     # pt48
-    TELLO_CMD_SET_SSID                  = 18     # pt68
-    TELLO_CMD_SSID_PASS                 = 19     # pt48
-    TELLO_CMD_SET_SSID_PASS             = 20     # pt68
-    TELLO_CMD_REGION                    = 21     # pt48
-    TELLO_CMD_SET_REGION                = 22     # pt68
-    TELLO_CMD_REQ_VIDEO_SPS_PPS         = 37     # pt60
-    TELLO_CMD_TAKE_PICTURE              = 48     # pt68
-    TELLO_CMD_SWITCH_PICTURE_VIDEO      = 49     # pt68
-    TELLO_CMD_START_RECORDING           = 50     # pt68
-    TELLO_CMD_SET_EV                    = 52     # pt48
-    TELLO_CMD_DATE_TIME                 = 70     # pt50
-    TELLO_CMD_STICK                     = 80     # pt60
-    TELLO_CMD_LOG_HEADER_WRITE          = 4176   # pt50
-    TELLO_CMD_LOG_DATA_WRITE            = 4177   # RX_O
-    TELLO_CMD_LOG_CONFIGURATION         = 4178   # pt50
-    TELLO_CMD_WIFI_SIGNAL               = 26     # RX_O
-    TELLO_CMD_VIDEO_BIT_RATE            = 40     # pt48
-    TELLO_CMD_LIGHT_STRENGTH            = 53     # RX_O
-    TELLO_CMD_VERSION_STRING            = 69     # pt48
-    TELLO_CMD_ACTIVATION_TIME           = 71     # pt48
-    TELLO_CMD_LOADER_VERSION            = 73     # pt48
-    TELLO_CMD_STATUS                    = 86     # RX_O
-    TELLO_CMD_ALT_LIMIT                 = 4182   # pt48
-    TELLO_CMD_LOW_BATT_THRESHOLD        = 4183   # pt48
-    TELLO_CMD_ATT_ANGLE                 = 4185   # pt48
-    TELLO_CMD_SET_JPEG_QUALITY          = 55     # pt68
-    TELLO_CMD_TAKEOFF                   = 84     # pt68
-    TELLO_CMD_LANDING                   = 85     # pt68
-    TELLO_CMD_SET_ALT_LIMIT             = 88     # pt68
-    TELLO_CMD_FLIP                      = 92     # pt70
-    TELLO_CMD_THROW_FLY                 = 93     # pt48
-    TELLO_CMD_PALM_LANDING              = 94     # pt48
-    TELLO_CMD_PLANE_CALIBRATION         = 4180   # pt68
-    TELLO_CMD_SET_LOW_BATTERY_THRESHOLD = 4181   # pt68
-    TELLO_CMD_SET_ATTITUDE_ANGLE        = 4184   # pt68
-    TELLO_CMD_ERROR1                    = 67     # RX_O
-    TELLO_CMD_ERROR2                    = 68     # RX_O
-    TELLO_CMD_FILE_SIZE                 = 98     # pt50
-    TELLO_CMD_FILE_DATA                 = 99     # pt50
-    TELLO_CMD_FILE_COMPLETE             = 100    # pt48
-    TELLO_CMD_HANDLE_IMU_ANGLE          = 90     # pt48
-    TELLO_CMD_SET_VIDEO_BIT_RATE        = 32     # pt68
-    TELLO_CMD_SET_DYN_ADJ_RATE          = 33     # pt68
-    TELLO_CMD_SET_EIS                   = 36     # pt68
-    TELLO_CMD_SMART_VIDEO_START         = 128    # pt68
-    TELLO_CMD_SMART_VIDEO_STATUS        = 129    # pt50
-    TELLO_CMD_BOUNCE                    = 4179   # pt68
-    
+    # Smart Video
+    TELLO_SMART_VIDEO_STOP = 0x00
+    TELLO_SMART_VIDEO_START = 0x01
+    TELLO_SMART_VIDEO_360 = 0x01
+    TELLO_SMART_VIDEO_CIRCLE = 0x02
+    TELLO_SMART_VIDEO_UP_OUT = 0x03
 
-# Smart Video     
-    TELLO_SMART_VIDEO_STOP              = 0x00
-    TELLO_SMART_VIDEO_START             = 0x01
-    TELLO_SMART_VIDEO_360               = 0x01
-    TELLO_SMART_VIDEO_CIRCLE            = 0x02
-    TELLO_SMART_VIDEO_UP_OUT            = 0x03
+    # PORT
+    TELLO_PORT_VIDEO = 6037
 
-# PORT
-    TELLO_PORT_VIDEO                    = 6037
-
-# CRC TABLES
+    # CRC TABLES
     TBL_CRC16 = [
-        0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf, 0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
-        0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e, 0x9cc9, 0x8d40, 0xbfdb, 0xae52, 0xdaed, 0xcb64, 0xf9ff, 0xe876,
-        0x2102, 0x308b, 0x0210, 0x1399, 0x6726, 0x76af, 0x4434, 0x55bd, 0xad4a, 0xbcc3, 0x8e58, 0x9fd1, 0xeb6e, 0xfae7, 0xc87c, 0xd9f5,
-        0x3183, 0x200a, 0x1291, 0x0318, 0x77a7, 0x662e, 0x54b5, 0x453c, 0xbdcb, 0xac42, 0x9ed9, 0x8f50, 0xfbef, 0xea66, 0xd8fd, 0xc974,
-        0x4204, 0x538d, 0x6116, 0x709f, 0x0420, 0x15a9, 0x2732, 0x36bb, 0xce4c, 0xdfc5, 0xed5e, 0xfcd7, 0x8868, 0x99e1, 0xab7a, 0xbaf3,
-        0x5285, 0x430c, 0x7197, 0x601e, 0x14a1, 0x0528, 0x37b3, 0x263a, 0xdecd, 0xcf44, 0xfddf, 0xec56, 0x98e9, 0x8960, 0xbbfb, 0xaa72,
-        0x6306, 0x728f, 0x4014, 0x519d, 0x2522, 0x34ab, 0x0630, 0x17b9, 0xef4e, 0xfec7, 0xcc5c, 0xddd5, 0xa96a, 0xb8e3, 0x8a78, 0x9bf1,
-        0x7387, 0x620e, 0x5095, 0x411c, 0x35a3, 0x242a, 0x16b1, 0x0738, 0xffcf, 0xee46, 0xdcdd, 0xcd54, 0xb9eb, 0xa862, 0x9af9, 0x8b70,
-        0x8408, 0x9581, 0xa71a, 0xb693, 0xc22c, 0xd3a5, 0xe13e, 0xf0b7, 0x0840, 0x19c9, 0x2b52, 0x3adb, 0x4e64, 0x5fed, 0x6d76, 0x7cff,
-        0x9489, 0x8500, 0xb79b, 0xa612, 0xd2ad, 0xc324, 0xf1bf, 0xe036, 0x18c1, 0x0948, 0x3bd3, 0x2a5a, 0x5ee5, 0x4f6c, 0x7df7, 0x6c7e,
-        0xa50a, 0xb483, 0x8618, 0x9791, 0xe32e, 0xf2a7, 0xc03c, 0xd1b5, 0x2942, 0x38cb, 0x0a50, 0x1bd9, 0x6f66, 0x7eef, 0x4c74, 0x5dfd,
-        0xb58b, 0xa402, 0x9699, 0x8710, 0xf3af, 0xe226, 0xd0bd, 0xc134, 0x39c3, 0x284a, 0x1ad1, 0x0b58, 0x7fe7, 0x6e6e, 0x5cf5, 0x4d7c,
-        0xc60c, 0xd785, 0xe51e, 0xf497, 0x8028, 0x91a1, 0xa33a, 0xb2b3, 0x4a44, 0x5bcd, 0x6956, 0x78df, 0x0c60, 0x1de9, 0x2f72, 0x3efb,
-        0xd68d, 0xc704, 0xf59f, 0xe416, 0x90a9, 0x8120, 0xb3bb, 0xa232, 0x5ac5, 0x4b4c, 0x79d7, 0x685e, 0x1ce1, 0x0d68, 0x3ff3, 0x2e7a,
-        0xe70e, 0xf687, 0xc41c, 0xd595, 0xa12a, 0xb0a3, 0x8238, 0x93b1, 0x6b46, 0x7acf, 0x4854, 0x59dd, 0x2d62, 0x3ceb, 0x0e70, 0x1ff9,
-        0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab, 0xa022, 0x92b9, 0x8330, 0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
+        0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf, 0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5,
+        0xe97e, 0xf8f7,
+        0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e, 0x9cc9, 0x8d40, 0xbfdb, 0xae52, 0xdaed, 0xcb64,
+        0xf9ff, 0xe876,
+        0x2102, 0x308b, 0x0210, 0x1399, 0x6726, 0x76af, 0x4434, 0x55bd, 0xad4a, 0xbcc3, 0x8e58, 0x9fd1, 0xeb6e, 0xfae7,
+        0xc87c, 0xd9f5,
+        0x3183, 0x200a, 0x1291, 0x0318, 0x77a7, 0x662e, 0x54b5, 0x453c, 0xbdcb, 0xac42, 0x9ed9, 0x8f50, 0xfbef, 0xea66,
+        0xd8fd, 0xc974,
+        0x4204, 0x538d, 0x6116, 0x709f, 0x0420, 0x15a9, 0x2732, 0x36bb, 0xce4c, 0xdfc5, 0xed5e, 0xfcd7, 0x8868, 0x99e1,
+        0xab7a, 0xbaf3,
+        0x5285, 0x430c, 0x7197, 0x601e, 0x14a1, 0x0528, 0x37b3, 0x263a, 0xdecd, 0xcf44, 0xfddf, 0xec56, 0x98e9, 0x8960,
+        0xbbfb, 0xaa72,
+        0x6306, 0x728f, 0x4014, 0x519d, 0x2522, 0x34ab, 0x0630, 0x17b9, 0xef4e, 0xfec7, 0xcc5c, 0xddd5, 0xa96a, 0xb8e3,
+        0x8a78, 0x9bf1,
+        0x7387, 0x620e, 0x5095, 0x411c, 0x35a3, 0x242a, 0x16b1, 0x0738, 0xffcf, 0xee46, 0xdcdd, 0xcd54, 0xb9eb, 0xa862,
+        0x9af9, 0x8b70,
+        0x8408, 0x9581, 0xa71a, 0xb693, 0xc22c, 0xd3a5, 0xe13e, 0xf0b7, 0x0840, 0x19c9, 0x2b52, 0x3adb, 0x4e64, 0x5fed,
+        0x6d76, 0x7cff,
+        0x9489, 0x8500, 0xb79b, 0xa612, 0xd2ad, 0xc324, 0xf1bf, 0xe036, 0x18c1, 0x0948, 0x3bd3, 0x2a5a, 0x5ee5, 0x4f6c,
+        0x7df7, 0x6c7e,
+        0xa50a, 0xb483, 0x8618, 0x9791, 0xe32e, 0xf2a7, 0xc03c, 0xd1b5, 0x2942, 0x38cb, 0x0a50, 0x1bd9, 0x6f66, 0x7eef,
+        0x4c74, 0x5dfd,
+        0xb58b, 0xa402, 0x9699, 0x8710, 0xf3af, 0xe226, 0xd0bd, 0xc134, 0x39c3, 0x284a, 0x1ad1, 0x0b58, 0x7fe7, 0x6e6e,
+        0x5cf5, 0x4d7c,
+        0xc60c, 0xd785, 0xe51e, 0xf497, 0x8028, 0x91a1, 0xa33a, 0xb2b3, 0x4a44, 0x5bcd, 0x6956, 0x78df, 0x0c60, 0x1de9,
+        0x2f72, 0x3efb,
+        0xd68d, 0xc704, 0xf59f, 0xe416, 0x90a9, 0x8120, 0xb3bb, 0xa232, 0x5ac5, 0x4b4c, 0x79d7, 0x685e, 0x1ce1, 0x0d68,
+        0x3ff3, 0x2e7a,
+        0xe70e, 0xf687, 0xc41c, 0xd595, 0xa12a, 0xb0a3, 0x8238, 0x93b1, 0x6b46, 0x7acf, 0x4854, 0x59dd, 0x2d62, 0x3ceb,
+        0x0e70, 0x1ff9,
+        0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab, 0xa022, 0x92b9, 0x8330, 0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a,
+        0x1ef1, 0x0f78
     ]
 
     TBL_CRC8 = [
@@ -135,10 +149,10 @@ class Tello:
         0xe9, 0xb7, 0x55, 0x0b, 0x88, 0xd6, 0x34, 0x6a, 0x2b, 0x75, 0x97, 0xc9, 0x4a, 0x14, 0xf6, 0xa8,
         0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
     ]
-    
+
     NEW_ALT_LIMIT = 30
 
-    def __init__(self, tello_ip = '192.168.10.1', portCmd = 8889):
+    def __init__(self, tello_ip='192.168.10.1', portCmd=8889):
         self.pill2kill = threading.Event()
         self.task20ms = TimerTask(0.02, self._timerTask, "World")
 
@@ -163,28 +177,28 @@ class Tello:
         self.task20ms.stop()
         self.pill2kill.set()
         self.sockCmd.close()
-        
+
     def setStickData(self, fast, roll, pitch, thr, yaw):
         self.stickData = (fast << 44) | (yaw << 33) | (thr << 22) | (pitch << 11) | (roll)
-        
+
     def takeOff(self):
         self._sendCmd(0x68, self.TELLO_CMD_TAKEOFF, None)
-        
+
     def land(self):
-        self._sendCmd(0x68, self.TELLO_CMD_LANDING,  bytearray([0x00]))
+        self._sendCmd(0x68, self.TELLO_CMD_LANDING, bytearray([0x00]))
 
     def setSmartVideoShot(self, mode, isStart):
         data = self.TELLO_SMART_VIDEO_START if isStart == True else self.TELLO_SMART_VIDEO_STOP
         data = data | (mode << 2)
         self._sendCmd(0x68, self.TELLO_CMD_SMART_VIDEO_START, bytearray([data]));
-        
+
     def bounce(self, isStart):
         data = 0x30 if isStart == True else 0x31;
         self._sendCmd(0x68, self.TELLO_CMD_BOUNCE, bytearray([data]));
 
-###############################################################################
-# utility functions
-###############################################################################
+    ###############################################################################
+    # utility functions
+    ###############################################################################
     def _calcCRC16(self, buf, size):
         i = 0
         seed = 0x3692
@@ -239,7 +253,7 @@ class Tello:
 
     def _parsePacket(self, buf):
         dataSize = 0
-        cmdID    = 0
+        cmdID = 0
 
         if len(buf) >= 11:
             bb = ByteBuffer.wrap(buf)
@@ -251,20 +265,20 @@ class Tello:
                 if crc8 != calcCRC8:
                     print 'wrong CRC8 {0:02x / 1:02x}'.format(crc8, calcCRC8)
 
-                pacType  = bb.get_ULInt8()
-                cmdID    = bb.get_ULInt16()
-                seqID    = bb.get_ULInt16()
+                pacType = bb.get_ULInt8()
+                cmdID = bb.get_ULInt16()
+                seqID = bb.get_ULInt16()
                 dataSize = size - 11;
-                data     = None
-                #if dataSize > 0:
+                data = None
+                # if dataSize > 0:
                 #    data = bytearray(dataSize)
                 #    bb.get(data)
                 bb.set_position(size - 2)
-                crc16    = bb.get_ULInt16()
-                calcCRC16=self._calcCRC16(buf, size - 2);
+                crc16 = bb.get_ULInt16()
+                calcCRC16 = self._calcCRC16(buf, size - 2);
                 if crc16 != calcCRC16:
                     print 'wrong CRC8 {0:04x / 1:04x}'.format(crc16, calcCRC16)
-                #print 'pt:{0:02x}, cmd:{1:4d}={2:04x}, seq:{3:04x}, data_sz:{4:d} - '.format(pacType, cmdID, cmdID, seqID, dataSize)
+                # print 'pt:{0:02x}, cmd:{1:4d}={2:04x}, seq:{3:04x}, data_sz:{4:d} - '.format(pacType, cmdID, cmdID, seqID, dataSize)
             else:
                 if mark == 0x63:
                     ack = ByteBuffer.allocate(11)
@@ -283,9 +297,9 @@ class Tello:
         return cmdID
 
     def _sendCmd(self, pacType, cmdID, data):
-        bb      = None
+        bb = None
         payload = None
-        out     = None
+        out = None
         seq = 0
         len = 0
 
@@ -299,12 +313,12 @@ class Tello:
             now = datetime.datetime.now()
             bb = ByteBuffer.allocate(11)
             bb.clear()
-            
+
             # put 64bit stick data
             pp = ByteBuffer.allocate(8)
             pp.put_ULInt64(self.stickData)
             pp.flip()
-            
+
             # get 48bit data only
             bb.put(pp.get_array(), 0, 6);
             bb.put_ULInt8(now.hour)
@@ -343,16 +357,15 @@ class Tello:
         self.sockCmd.sendto(out.get_array(), self.addrCmd)
         return None
 
-
-###############################################################################
-# CommandRX Thread
-###############################################################################
+    ###############################################################################
+    # CommandRX Thread
+    ###############################################################################
     def _threadCmdRX(self, stop_event, arg):
-        #print '_threadCmdRX started !!!'
+        # print '_threadCmdRX started !!!'
         statusCtr = 0
         data = bytearray(1024)
         payload = None
-        
+
         while not stop_event.is_set():
             try:
                 size, addr = self.sockCmd.recvfrom_into(data)
@@ -363,16 +376,16 @@ class Tello:
                 print e
                 continue
             else:
-                cmdID   = self._parsePacket(data[:size])
-                payload = ByteBuffer.wrap(data[9:size-1])
-               
+                cmdID = self._parsePacket(data[:size])
+                payload = ByteBuffer.wrap(data[9:size - 1])
+
                 if cmdID == self.TELLO_CMD_CONN_ACK:
                     print 'connection successful !'
-                    #self._printArray(data[:size])
-                
+                    # self._printArray(data[:size])
+
                 elif cmdID == self.TELLO_CMD_DATE_TIME:
                     self._sendCmd(0x50, cmdID, None)
-                
+
                 elif cmdID == self.TELLO_CMD_STATUS:
                     if statusCtr == 3:
                         self._sendCmd(0x60, self.TELLO_CMD_REQ_VIDEO_SPS_PPS, None)
@@ -384,70 +397,69 @@ class Tello:
                         self._sendCmd(0x48, self.TELLO_CMD_REGION, None)
                         self._sendCmd(0x48, self.TELLO_CMD_SET_EV, bytearray([0x00]));
                     statusCtr = statusCtr + 1
-                
+
                 elif cmdID == self.TELLO_CMD_VERSION_STRING:
                     if size >= 42:
                         print 'Version:' + data[10:30].decode()
-                
+
                 elif cmdID == self.TELLO_CMD_SMART_VIDEO_START:
                     if payload.get_remaining() > 0:
                         print 'smart video start'
-                        
+
                 elif cmdID == self.TELLO_CMD_ALT_LIMIT:
                     if payload.get_remaining() > 0:
-                        payload.get_ULInt8()                    # 0x00
+                        payload.get_ULInt8()  # 0x00
                         height = payload.get_ULInt16()
                         print 'alt limit : {0:2d} meter'.format(height)
-                        
+
                         if height != self.NEW_ALT_LIMIT:
                             print 'set new alt limit : {0:2d} meter'.format(self.NEW_ALT_LIMIT)
-                            self._sendCmd(0x68, self.TELLO_CMD_SET_ALT_LIMIT, bytearray([self.NEW_ALT_LIMIT & 0xff, (self.NEW_ALT_LIMIT >> 8) & 0xff]));
-               
+                            self._sendCmd(0x68, self.TELLO_CMD_SET_ALT_LIMIT,
+                                          bytearray([self.NEW_ALT_LIMIT & 0xff, (self.NEW_ALT_LIMIT >> 8) & 0xff]));
+
                 elif cmdID == self.TELLO_CMD_SMART_VIDEO_STATUS:
                     if payload.get_remaining() > 0:
                         resp = payload.get_ULInt8()
                         dummy = resp & 0x07
                         start = (resp >> 3) & 0x03
-                        mode  = (resp >> 5) & 0x07
+                        mode = (resp >> 5) & 0x07
                         print 'smart video status - mode:{0:d}, start:{1:d}'.format(mode, start)
                         self._sendCmd(0x50, self.TELLO_CMD_SMART_VIDEO_STATUS, bytearray([0x00]));
-                #else:
-                    #for i in data:
-                    #    print hex(ord(i)),
-                    #print ''
-        #print '_threadCmdRX terminated !!!'
+                # else:
+                # for i in data:
+                #    print hex(ord(i)),
+                # print ''
+        # print '_threadCmdRX terminated !!!'
 
-
-###############################################################################
-# VideoRX Thread
-###############################################################################
+    ###############################################################################
+    # VideoRX Thread
+    ###############################################################################
     def _threadVideoRX(self, stop_event, arg):
         videoPlayer = Popen(
             ['mplayer', '-fps', '40', '-', '-demuxer', 'h264es', '-cache', '1024', '-cache-min', '5'],
             stdin=PIPE)
-        #print '_threadVideoRX started !!!'
+        # print '_threadVideoRX started !!!'
 
         sockVideo = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        addrVideo = ('192.168.10.2',self.TELLO_PORT_VIDEO)
-        #cap = cv2.VideoCapture('udp://192.168.10.2:'+str(self.TELLO_PORT_VIDEO))
-
+        addrVideo = ('192.168.10.2', self.TELLO_PORT_VIDEO)
+        # cap = cv2.VideoCapture('udp://192.168.10.2:'+str(self.TELLO_PORT_VIDEO))
 
         sockVideo.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sockVideo.settimeout(.5)
         sockVideo.bind(addrVideo)
-        
+
         data = bytearray(4096)
         fileVideo = open('video.h264', 'wb')
         isSPSRcvd = False
-        #cap = cv2.VideoCapture('video.h264')
-        #cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('H', '2', '6', '4'))
+        # cap = cv2.VideoCapture('video.h264')
+        # cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('H', '2', '6', '4'))
         while not stop_event.is_set():
 
-            #ret, frame = cap.read()
-            #if ret:
-                #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                #cv2.imshow('frame', gray)
-                #cv2.waitKey(1)
+            # ret, frame = cap.read()
+            # if ret:
+            # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # cv2.imshow('frame', gray)
+            # cv2.waitKey(1)
             try:
                 size, addr = sockVideo.recvfrom_into(data)
             except socket.timeout, e:
@@ -459,30 +471,27 @@ class Tello:
             else:
                 if size > 6 and data[2] == 0x00 and data[3] == 0x00 and data[4] == 0x00 and data[5] == 0x01:
                     nal_type = data[6] & 0x1f
-                    #print 'NAL=', nal_type
+                    # print 'NAL=', nal_type
                     if nal_type == 7:
                         isSPSRcvd = True;
 
                 # drop 2 bytes
                 if isSPSRcvd:
                     fileVideo.write(data[2:size])
-                    #print 'size written: '+str(size)
-                    #sys.stdout.write(data[2:size])
-
+                    # print 'size written: '+str(size)
                     videoPlayer.stdin.write(data[2:size])
 
         sockVideo.close()
         fileVideo.close()
-        #print '_threadVideoRX terminated !!!'
+        # print '_threadVideoRX terminated !!!'
 
-
-###############################################################################
-# timerTask
-###############################################################################
+    ###############################################################################
+    # timerTask
+    ###############################################################################
     def _timerTask(self, arg):
         self._sendCmd(0x60, self.TELLO_CMD_STICK, None)
         self.rcCtr = self.rcCtr + 1
 
-        #every 1sec
+        # every 1sec
         if self.rcCtr % 50 == 0:
             self._sendCmd(0x60, self.TELLO_CMD_REQ_VIDEO_SPS_PPS, None)

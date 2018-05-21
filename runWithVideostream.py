@@ -24,34 +24,34 @@ import telloWithVideostream
 ###############################################################################
 # constants
 ###############################################################################
-KEY_MASK_UP    = 0x0001
-KEY_MASK_DOWN  = 0x0002
-KEY_MASK_LEFT  = 0x0004
+KEY_MASK_UP = 0x0001
+KEY_MASK_DOWN = 0x0002
+KEY_MASK_LEFT = 0x0004
 KEY_MASK_RIGHT = 0x0008
-KEY_MASK_W     = 0x0010
-KEY_MASK_S     = 0x0020
-KEY_MASK_A     = 0x0040
-KEY_MASK_D     = 0x0080
-KEY_MASK_SPC   = 0x0100
-KEY_MASK_1     = 0x0200
-KEY_MASK_2     = 0x0400
-KEY_MASK_ESC   = 0x8000
+KEY_MASK_W = 0x0010
+KEY_MASK_S = 0x0020
+KEY_MASK_A = 0x0040
+KEY_MASK_D = 0x0080
+KEY_MASK_SPC = 0x0100
+KEY_MASK_1 = 0x0200
+KEY_MASK_2 = 0x0400
+KEY_MASK_ESC = 0x8000
 
-RC_VAL_MIN     = 364
-RC_VAL_MID     = 1024
-RC_VAL_MAX     = 1684
+RC_VAL_MIN = 364
+RC_VAL_MID = 1024
+RC_VAL_MAX = 1684
 
-IDX_ROLL       = 0
-IDX_PITCH      = 1
-IDX_THR        = 2
-IDX_YAW        = 3
+IDX_ROLL = 0
+IDX_PITCH = 1
+IDX_THR = 2
+IDX_YAW = 3
 
 ###############################################################################
 # global variables
 ###############################################################################
-mKeyFlags    = 0
+mKeyFlags = 0
 mOldKeyFlags = 0
-mRCVal       = [1024, 1024, 1024, 1024]
+mRCVal = [1024, 1024, 1024, 1024]
 
 
 ###############################################################################
@@ -62,10 +62,12 @@ def isKeyPressed(mask):
         return True
     return False
 
+
 def isKeyToggled(mask):
     if (mKeyFlags & mask) != (mOldKeyFlags & mask):
         return True
     return False
+
 
 def setFlag(e, mask):
     global mKeyFlags
@@ -73,6 +75,7 @@ def setFlag(e, mask):
         mKeyFlags = mKeyFlags | mask
     else:
         mKeyFlags = mKeyFlags & ~mask
+
 
 def toggleFlag(e, mask):
     global mKeyFlags
@@ -82,25 +85,28 @@ def toggleFlag(e, mask):
         else:
             mKeyFlags = mKeyFlags | mask
 
+
 def clearToggle():
     global mOldKeyFlags
     mOldKeyFlags = mKeyFlags
 
+
 tblKeyFunctions = {
-#    key      toggle   mask
-    'up'    : (False, KEY_MASK_UP),
-    'down'  : (False, KEY_MASK_DOWN),
-    'left'  : (False, KEY_MASK_LEFT),
-    'right' : (False, KEY_MASK_RIGHT),
-    'w'     : (False, KEY_MASK_W),
-    's'     : (False, KEY_MASK_S),
-    'a'     : (False, KEY_MASK_A),
-    'd'     : (False, KEY_MASK_D),
-    'esc'   : (False, KEY_MASK_ESC),
-    'ctrl' : (True,  KEY_MASK_SPC),
-    '1'     : (True,  KEY_MASK_1),
-    '2'     : (True,  KEY_MASK_2),
+    #    key      toggle   mask
+    'up': (False, KEY_MASK_UP),
+    'down': (False, KEY_MASK_DOWN),
+    'left': (False, KEY_MASK_LEFT),
+    'right': (False, KEY_MASK_RIGHT),
+    'w': (False, KEY_MASK_W),
+    's': (False, KEY_MASK_S),
+    'a': (False, KEY_MASK_A),
+    'd': (False, KEY_MASK_D),
+    'esc': (False, KEY_MASK_ESC),
+    'space': (True, KEY_MASK_SPC),
+    '1': (True, KEY_MASK_1),
+    '2': (True, KEY_MASK_2),
 }
+
 
 def handleKey(e):
     global mKeyFlags
@@ -109,6 +115,7 @@ def handleKey(e):
             setFlag(e, tblKeyFunctions[e.name][1])
         else:
             toggleFlag(e, tblKeyFunctions[e.name][1])
+
 
 ###############################################################################
 # main
@@ -122,7 +129,7 @@ print '|      w                   up        |'
 print '|  a       d          left    right  |'
 print '|      s                  down       |'
 print '|                                    |'
-print '|         ctrl (takeoff/land)        |'
+print '|         space(takeoff/land)        |'
 print '|                                    |'
 print '+------------------------------------+'
 
@@ -132,7 +139,7 @@ keyboard.hook(handleKey)
 while True:
     if isKeyPressed(KEY_MASK_ESC):
         break;
-    
+
     # Toggle Keys
     if isKeyToggled(KEY_MASK_SPC):
         if isKeyPressed(KEY_MASK_SPC):
@@ -151,7 +158,7 @@ while True:
             mDrone.setSmartVideoShot(telloWithVideostream.Tello.TELLO_SMART_VIDEO_360, False)
             print 'SmartVideo 360 stop'
         clearToggle()
-        
+
     if isKeyToggled(KEY_MASK_2):
         if isKeyPressed(KEY_MASK_2):
             mDrone.bounce(True)
@@ -160,7 +167,7 @@ while True:
             mDrone.bounce(False)
             print 'Bounce stop'
         clearToggle()
-        
+
     # RC Keys
     # pitch / roll
     if isKeyPressed(KEY_MASK_RIGHT):
@@ -169,14 +176,14 @@ while True:
         mRCVal[IDX_ROLL] = RC_VAL_MIN
     else:
         mRCVal[IDX_ROLL] = RC_VAL_MID
-        
+
     if isKeyPressed(KEY_MASK_UP):
         mRCVal[IDX_PITCH] = RC_VAL_MAX
     elif isKeyPressed(KEY_MASK_DOWN):
         mRCVal[IDX_PITCH] = RC_VAL_MIN
     else:
         mRCVal[IDX_PITCH] = RC_VAL_MID
-      
+
     # thr / yaw
     if isKeyPressed(KEY_MASK_W):
         mRCVal[IDX_THR] = RC_VAL_MAX
@@ -184,16 +191,15 @@ while True:
         mRCVal[IDX_THR] = RC_VAL_MIN
     else:
         mRCVal[IDX_THR] = RC_VAL_MID
-        
+
     if isKeyPressed(KEY_MASK_D):
         mRCVal[IDX_YAW] = RC_VAL_MAX
     elif isKeyPressed(KEY_MASK_A):
         mRCVal[IDX_YAW] = RC_VAL_MIN
     else:
-        mRCVal[IDX_YAW] = RC_VAL_MID        
-    
-    mDrone.setStickData(0, mRCVal[IDX_ROLL], mRCVal[IDX_PITCH], mRCVal[IDX_THR], mRCVal[IDX_YAW])
-    #print 'roll:{0:4d}, pitch:{1:4d}, thr:{2:4d}, yaw:{3:4d}'.format(mRCVal[IDX_ROLL], mRCVal[IDX_PITCH], mRCVal[IDX_THR], mRCVal[IDX_YAW])
+        mRCVal[IDX_YAW] = RC_VAL_MID
 
-    
+    mDrone.setStickData(0, mRCVal[IDX_ROLL], mRCVal[IDX_PITCH], mRCVal[IDX_THR], mRCVal[IDX_YAW])
+    # print 'roll:{0:4d}, pitch:{1:4d}, thr:{2:4d}, yaw:{3:4d}'.format(mRCVal[IDX_ROLL], mRCVal[IDX_PITCH], mRCVal[IDX_THR], mRCVal[IDX_YAW])
+
 mDrone.stop()
