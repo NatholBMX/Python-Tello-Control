@@ -94,7 +94,7 @@ def track_face(img):
         # [i.e., (x, y, w, h)], then draw the face bounding box
         (x, y, w, h) = face_utils.rect_to_bb(rect)
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        
+
         #calculate center of face rectangle
         pic_height = np.size(img, 0)
         pic_width = np.size(img, 1)
