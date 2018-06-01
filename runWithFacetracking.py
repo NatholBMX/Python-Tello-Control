@@ -144,8 +144,10 @@ for fileName in fileList:
     os.remove("./temp/"+fileName)
 
 # image parameters
-width=160
-height=120
+#width=160
+#height=120
+width=480
+height=360
 
 n=1
 while True:
@@ -154,11 +156,12 @@ while True:
     if img is not None:
 
         resized_image = cv2.resize(img, (width, height))
-        img4, x, y=track_face(resized_image)
-
-        #if x is not None:
-            #print "x, y " +str(x) +" "+str(y)
-        cv2.imshow("Hough", img4)
+        #img4, x, y=track_face(resized_image)
+        x, y=None, None
+        img5, x, y = recognize_face(resized_image)
+        # if x is not None:
+        #     print "x, y " +str(x) +" "+str(y)
+        cv2.imshow("Hough", img5)
         cv2.waitKey(1)
         n += 1
 
