@@ -123,18 +123,18 @@ def handleKey(e):
 ###############################################################################
 # main
 ###############################################################################
-print 'Tello Controller                      '
-print '+------------------------------------+'
-print '|  ESC(quit) 1(360) 2(bounce)        |'
-print '+------------------------------------+'
-print '|                                    |'
-print '|      w                   up        |'
-print '|  a       d          left    right  |'
-print '|      s                  down       |'
-print '|                                    |'
-print '|         space(takeoff/land)        |'
-print '|                                    |'
-print '+------------------------------------+'
+print('Tello Controller                      ')
+print('+------------------------------------+')
+print('|  ESC(quit) 1(360) 2(bounce)        |')
+print('+------------------------------------+')
+print('|                                    |')
+print('|      w                   up        |')
+print('|  a       d          left    right  |')
+print('|      s                  down       |')
+print('|                                    |')
+print('|         space(takeoff/land)        |')
+print('|                                    |')
+print('+------------------------------------+')
 
 mDrone = telloWithImageOutput.Tello()
 keyboard.hook(handleKey)
@@ -202,10 +202,10 @@ while True:
     if isKeyToggled(KEY_MASK_SPC):
         if isKeyPressed(KEY_MASK_SPC):
             mDrone.takeOff()
-            print 'take off'
+            print('take off')
         else:
             mDrone.land()
-            print 'land'
+            print('land')
         clearToggle()
 
 
@@ -214,22 +214,22 @@ while True:
 
     if isKeyPressed(KEY_MASK_RIGHT):
         mRCVal[IDX_ROLL] = RC_VAL_MAX
-        print"rolling right "
+        print("rolling right ")
     elif isKeyPressed(KEY_MASK_LEFT):
         mRCVal[IDX_ROLL] = RC_VAL_MIN
-        print "rolling left"
+        print("rolling left")
     else:
         mRCVal[IDX_ROLL] = RC_VAL_MID
 
     if isKeyPressed(KEY_MASK_UP):
         mRCVal[IDX_PITCH] = RC_VAL_MAX
-        print"rolling up"
+        print("rolling up")
     elif isKeyPressed(KEY_MASK_DOWN):
         mRCVal[IDX_PITCH] = RC_VAL_MIN
-        print"rolling down"
+        print("rolling down")
     else:
         mRCVal[IDX_PITCH] = RC_VAL_MID
 
-    mDrone.setStickData(0, mRCVal[IDX_ROLL], mRCVal[IDX_PITCH], mRCVal[IDX_THR], mRCVal[IDX_YAW])
+    mDrone.setStickData(0, int(mRCVal[IDX_ROLL]), int(mRCVal[IDX_PITCH]), int(mRCVal[IDX_THR]), int(mRCVal[IDX_YAW]))
     #print 'roll:{0:4d}, pitch:{1:4d}, thr:{2:4d}, yaw:{3:4d}'.format(mRCVal[IDX_ROLL], mRCVal[IDX_PITCH], mRCVal[IDX_THR], mRCVal[IDX_YAW])
 mDrone.stop()

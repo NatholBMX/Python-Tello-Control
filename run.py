@@ -113,18 +113,18 @@ def handleKey(e):
 ###############################################################################
 # main
 ###############################################################################
-print 'Tello Controller                      '
-print '+------------------------------------+'
-print '|  ESC(quit) 1(360) 2(bounce)        |'
-print '+------------------------------------+'
-print '|                                    |'
-print '|      w                   up        |'
-print '|  a       d          left    right  |'
-print '|      s                  down       |'
-print '|                                    |'
-print '|         space(takeoff/land)        |'
-print '|                                    |'
-print '+------------------------------------+'
+print('Tello Controller                      ')
+print('+------------------------------------+')
+print('|  ESC(quit) 1(360) 2(bounce)        |')
+print('+------------------------------------+')
+print('|                                    |')
+print('|      w                   up        |')
+print('|  a       d          left    right  |')
+print('|      s                  down       |')
+print('|                                    |')
+print('|         space(takeoff/land)        |')
+print('|                                    |')
+print('+------------------------------------+')
 
 mDrone = tello.Tello()
 keyboard.hook(handleKey)
@@ -137,28 +137,28 @@ while True:
     if isKeyToggled(KEY_MASK_SPC):
         if isKeyPressed(KEY_MASK_SPC):
             mDrone.takeOff()
-            print 'take off'
+            print('take off')
         else:
             mDrone.land()
-            print 'land'
+            print('land')
         clearToggle()
 
     if isKeyToggled(KEY_MASK_1):
         if isKeyPressed(KEY_MASK_1):
             mDrone.setSmartVideoShot(tello.Tello.TELLO_SMART_VIDEO_360, True)
-            print 'SmartVideo 360 start'
+            print('SmartVideo 360 start')
         else:
             mDrone.setSmartVideoShot(tello.Tello.TELLO_SMART_VIDEO_360, False)
-            print 'SmartVideo 360 stop'
+            print('SmartVideo 360 stop')
         clearToggle()
         
     if isKeyToggled(KEY_MASK_2):
         if isKeyPressed(KEY_MASK_2):
             mDrone.bounce(True)
-            print 'Bounce start'
+            print('Bounce start')
         else:
             mDrone.bounce(False)
-            print 'Bounce stop'
+            print('Bounce stop')
         clearToggle()
         
     # RC Keys

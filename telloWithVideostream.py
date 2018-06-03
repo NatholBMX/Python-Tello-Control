@@ -226,10 +226,10 @@ class Tello:
             size = len(buf)
 
         while size > 0:
-            print '0x' + format(buf[i], '02x') + ',',
+            print('0x' + format(buf[i], '02x') + ',', end=' ')
             i = i + 1
             size = size - 1
-        print ''
+        print('')
 
     def _buildPacket(self, pacType, cmdID, seqID, data):
         size = len(data) if data != None else 0
@@ -263,7 +263,7 @@ class Tello:
                 crc8 = bb.get_ULInt8()
                 calcCRC8 = self._calcCRC8(buf, 3)
                 if crc8 != calcCRC8:
-                    print 'wrong CRC8 {0:02x / 1:02x}'.format(crc8, calcCRC8)
+                    print('wrong CRC8 {0:02x / 1:02x}'.format(crc8, calcCRC8))
 
                 pacType = bb.get_ULInt8()
                 cmdID = bb.get_ULInt16()
@@ -277,7 +277,7 @@ class Tello:
                 crc16 = bb.get_ULInt16()
                 calcCRC16 = self._calcCRC16(buf, size - 2);
                 if crc16 != calcCRC16:
-                    print 'wrong CRC8 {0:04x / 1:04x}'.format(crc16, calcCRC16)
+                    print('wrong CRC8 {0:04x / 1:04x}'.format(crc16, calcCRC16))
                 # print 'pt:{0:02x}, cmd:{1:4d}={2:04x}, seq:{3:04x}, data_sz:{4:d} - '.format(pacType, cmdID, cmdID, seqID, dataSize)
             else:
                 if mark == 0x63:
@@ -288,11 +288,11 @@ class Tello:
                     if ack.get_array() == buf:
                         cmdID = self.TELLO_CMD_CONN_ACK
                     else:
-                        print 'wrong video port !!'
+                        print('wrong video port !!')
                 else:
-                    print 'wrong mark !! {0:02x}'.format(mark)
+                    print('wrong mark !! {0:02x}'.format(mark))
         elif buf != None:
-            print 'wrong packet length={0:d}, 1st byte={1:02x}'.format(len(buf), buf[0])
+            print('wrong packet length={0:d}, 1st byte={1:02x}'.format(len(buf), buf[0]))
 
         return cmdID
 
@@ -369,18 +369,18 @@ class Tello:
         while not stop_event.is_set():
             try:
                 size, addr = self.sockCmd.recvfrom_into(data)
-            except socket.timeout, e:
+            except socket.timeout as e:
                 time.sleep(.5)
                 continue
-            except socket.error, e:
-                print e
+            except socket.error as e:
+                print(e)
                 continue
             else:
                 cmdID = self._parsePacket(data[:size])
                 payload = ByteBuffer.wrap(data[9:size - 1])
 
                 if cmdID == self.TELLO_CMD_CONN_ACK:
-                    print 'connection successful !'
+                    print('connection successful !')
                     # self._printArray(data[:size])
 
                 elif cmdID == self.TELLO_CMD_DATE_TIME:
@@ -400,20 +400,20 @@ class Tello:
 
                 elif cmdID == self.TELLO_CMD_VERSION_STRING:
                     if size >= 42:
-                        print 'Version:' + data[10:30].decode()
+                        print('Version:' + data[10:30].decode())
 
                 elif cmdID == self.TELLO_CMD_SMART_VIDEO_START:
                     if payload.get_remaining() > 0:
-                        print 'smart video start'
+                        print('smart video start')
 
                 elif cmdID == self.TELLO_CMD_ALT_LIMIT:
                     if payload.get_remaining() > 0:
                         payload.get_ULInt8()  # 0x00
                         height = payload.get_ULInt16()
-                        print 'alt limit : {0:2d} meter'.format(height)
+                        print('alt limit : {0:2d} meter'.format(height))
 
                         if height != self.NEW_ALT_LIMIT:
-                            print 'set new alt limit : {0:2d} meter'.format(self.NEW_ALT_LIMIT)
+                            print('set new alt limit : {0:2d} meter'.format(self.NEW_ALT_LIMIT))
                             self._sendCmd(0x68, self.TELLO_CMD_SET_ALT_LIMIT,
                                           bytearray([self.NEW_ALT_LIMIT & 0xff, (self.NEW_ALT_LIMIT >> 8) & 0xff]));
 
@@ -423,7 +423,7 @@ class Tello:
                         dummy = resp & 0x07
                         start = (resp >> 3) & 0x03
                         mode = (resp >> 5) & 0x07
-                        print 'smart video status - mode:{0:d}, start:{1:d}'.format(mode, start)
+                        print('smart video status - mode:{0:d}, start:{1:d}'.format(mode, start))
                         self._sendCmd(0x50, self.TELLO_CMD_SMART_VIDEO_STATUS, bytearray([0x00]));
                 # else:
                 # for i in data:
@@ -462,11 +462,11 @@ class Tello:
             # cv2.waitKey(1)
             try:
                 size, addr = sockVideo.recvfrom_into(data)
-            except socket.timeout, e:
+            except socket.timeout as e:
                 time.sleep(.5)
                 continue
-            except socket.error, e:
-                print e
+            except socket.error as e:
+                print(e)
                 break
             else:
                 if size > 6 and data[2] == 0x00 and data[3] == 0x00 and data[4] == 0x00 and data[5] == 0x01:

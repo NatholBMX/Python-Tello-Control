@@ -1,10 +1,6 @@
 import cv2
 import numpy as np
-import dlib
 import face_recognition
-
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor('./detector/det.dat')
 
 
 def auto_canny(image, sigma=0.33):
@@ -53,8 +49,8 @@ def find_red(original_img):
 
 
 def track_hand(img):
-    w=None
-    h=None
+    w = None
+    h = None
     # Blur the image
     blur = cv2.blur(img, (3, 3))
 
@@ -114,7 +110,7 @@ def track_hand(img):
             end = tuple(cnts[e][0])
             far = tuple(cnts[f][0])
             FarDefect.append(far)
-            #cv2.line(img, start, end, [0, 255, 0], 1)
+            # cv2.line(img, start, end, [0, 255, 0], 1)
             # cv2.circle(img, far, 10, [100, 255, 255], 3)
 
         # Find moments of the largest contour
@@ -127,9 +123,9 @@ def track_hand(img):
         centerMass = (cx, cy)
 
         # Draw center mass
-        #cv2.circle(img, centerMass, 7, [100, 0, 255], 2)
+        # cv2.circle(img, centerMass, 7, [100, 0, 255], 2)
         font = cv2.FONT_HERSHEY_SIMPLEX
-        #cv2.putText(img, 'Center', tuple(centerMass), font, 2, (255, 255, 255), 2)
+        # cv2.putText(img, 'Center', tuple(centerMass), font, 2, (255, 255, 255), 2)
 
         # Distance from each finger defect(finger webbing) to the center mass
         distanceBetweenDefectsToCenter = []
