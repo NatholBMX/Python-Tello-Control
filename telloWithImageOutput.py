@@ -225,7 +225,7 @@ class Tello:
             size = len(buf)
 
         while size > 0:
-            print('0x' + format(buf[i], '02x') + ',', end=' ')
+            print('0x' + format(buf[i], '02x') + ', ')
             i = i + 1
             size = size - 1
         print('')

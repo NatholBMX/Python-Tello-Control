@@ -49,8 +49,8 @@ def find_red(original_img):
 
 
 def track_hand(img):
-    w = None
-    h = None
+    w=None
+    h=None
     # Blur the image
     blur = cv2.blur(img, (3, 3))
 
@@ -110,7 +110,7 @@ def track_hand(img):
             end = tuple(cnts[e][0])
             far = tuple(cnts[f][0])
             FarDefect.append(far)
-            # cv2.line(img, start, end, [0, 255, 0], 1)
+            #cv2.line(img, start, end, [0, 255, 0], 1)
             # cv2.circle(img, far, 10, [100, 255, 255], 3)
 
         # Find moments of the largest contour
@@ -123,9 +123,9 @@ def track_hand(img):
         centerMass = (cx, cy)
 
         # Draw center mass
-        # cv2.circle(img, centerMass, 7, [100, 0, 255], 2)
+        #cv2.circle(img, centerMass, 7, [100, 0, 255], 2)
         font = cv2.FONT_HERSHEY_SIMPLEX
-        # cv2.putText(img, 'Center', tuple(centerMass), font, 2, (255, 255, 255), 2)
+        #cv2.putText(img, 'Center', tuple(centerMass), font, 2, (255, 255, 255), 2)
 
         # Distance from each finger defect(finger webbing) to the center mass
         distanceBetweenDefectsToCenter = []
@@ -189,6 +189,8 @@ def recognize_face(img):
     face_locations = face_recognition.face_locations(img, number_of_times_to_upsample=0, model="cnn")
     centerX = None
     centerY = None
+    face_width=None
+    face_height=None
     for face_location in face_locations:
         # Print the location of each face in this image
         top, right, bottom, left = face_location
@@ -204,4 +206,4 @@ def recognize_face(img):
         centerY = top + face_height / 2 - pic_height / 2
         break
 
-    return img, centerX, centerY
+    return img, centerX, centerY, face_width, face_height
