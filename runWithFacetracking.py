@@ -17,12 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import time
 import keyboard
-import telloWithImageOutput
-import cv2
+from utils import telloWithImageOutput
 import os
-from imageAnalysis import *
+from imageAnalysis.imageAnalysis import *
 #import faceDetection
 
 ###############################################################################

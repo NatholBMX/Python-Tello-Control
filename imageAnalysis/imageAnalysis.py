@@ -207,3 +207,6 @@ def recognize_face(img):
         break
 
     return img, centerX, centerY, face_width, face_height
+
+def track_hand_cpm(input_image):
+    return

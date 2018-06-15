@@ -17,9 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import time
 import keyboard
-import telloWithVideostream
+from utils import telloWithVideostream
 
 ###############################################################################
 # constants

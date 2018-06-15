@@ -19,14 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import socket
 import threading
 import time
-import traceback
 import datetime
-from timertask import TimerTask
-from bytebuffer import ByteBuffer
+from utils.timertask import TimerTask
+from utils.bytebuffer import ByteBuffer
 import sys
 import os
 import msvcrt
-import cv2
 from subprocess import Popen, PIPE
 
 msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
