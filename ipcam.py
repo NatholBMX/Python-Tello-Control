@@ -12,12 +12,18 @@ host = "192.168.1.3:8080"
 
 hoststream = 'http://' + host + '/shot.jpg'
 
+USE_WEBCAM = True
+
 
 def get_img_from_stream():
-    # Use urllib to get the image and convert into a cv2 usable format
-    imgResp = urllib.request.urlopen(hoststream)
-    imgNp = np.array(bytearray(imgResp.read()), dtype=np.uint8)
-    img = cv2.imdecode(imgNp, -1)
+    if USE_WEBCAM:
+        cam = cv2.VideoCapture(0)
+        _, img = cam.read()
+    else:
+        # Use urllib to get the image and convert into a cv2 usable format
+        imgResp = urllib.request.urlopen(hoststream)
+        imgNp = np.array(bytearray(imgResp.read()), dtype=np.uint8)
+        img = cv2.imdecode(imgNp, -1)
     return img
 
 
@@ -86,8 +92,9 @@ def main():
     #     show_image(img6)
 
     while True:
-        img=get_img_from_stream()
+        img = get_img_from_stream()
         handTracking.trackHandCPM(img)
+
 
 
 if __name__ == "__main__":
