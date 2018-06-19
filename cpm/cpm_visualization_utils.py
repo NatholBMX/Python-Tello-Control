@@ -15,7 +15,7 @@ joint_detections = np.zeros(shape=(21, 2))
 img = None
 
 
-def main():
+def main(argv):
     global joint_detections
     os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu_id)
 

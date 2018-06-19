@@ -4,8 +4,9 @@
 import cv2
 import numpy as np
 import urllib.request, urllib.error, urllib.parse
-from imageAnalysis import imageAnalysis, handTracking
-from utils import detector_utils
+#from imageAnalysis import imageAnalysis, handTracking
+#from utils import detector_utils
+from imageAnalysis import handTracking
 
 # host to our video stream
 host = "192.168.1.3:8080"
@@ -90,10 +91,11 @@ def main():
     #             num_hands_detect, score_thresh, scores, boxes, img.shape[0], img.shape[1], img)
     #
     #     show_image(img6)
-
+    handTracking.init_cpm_session()
     while True:
         img = get_img_from_stream()
-        handTracking.trackHandCPM(img)
+        img2=handTracking.trackHandCPM(img)
+        show_image(img2)
 
 
 
