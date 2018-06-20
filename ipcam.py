@@ -94,7 +94,7 @@ def main():
     handTracking.init_cpm_session()
     while True:
         img = get_img_from_stream()
-        img2=handTracking.trackHandCPM(img)
+        img2=handTracking.trackHandCPM_alt(img)
         show_image(img2)
 
 
