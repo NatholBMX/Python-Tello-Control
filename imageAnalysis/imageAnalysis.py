@@ -43,14 +43,13 @@ def find_red(original_img):
     # perform the filtering. mask is another word for filter
     mask = cv2.inRange(original_img, red_lower, red_upper)
     output = cv2.bitwise_and(original_img, original_img, mask=mask)
-    # convert the image to grayscale, then calculate the center of the red (only remaining color)
-    # output_gray = rgb2gray(output)
+
     return output
 
 
 def track_hand(img):
-    w=None
-    h=None
+    w = None
+    h = None
     # Blur the image
     blur = cv2.blur(img, (3, 3))
 
@@ -110,7 +109,7 @@ def track_hand(img):
             end = tuple(cnts[e][0])
             far = tuple(cnts[f][0])
             FarDefect.append(far)
-            #cv2.line(img, start, end, [0, 255, 0], 1)
+            # cv2.line(img, start, end, [0, 255, 0], 1)
             # cv2.circle(img, far, 10, [100, 255, 255], 3)
 
         # Find moments of the largest contour
@@ -123,9 +122,9 @@ def track_hand(img):
         centerMass = (cx, cy)
 
         # Draw center mass
-        #cv2.circle(img, centerMass, 7, [100, 0, 255], 2)
+        # cv2.circle(img, centerMass, 7, [100, 0, 255], 2)
         font = cv2.FONT_HERSHEY_SIMPLEX
-        #cv2.putText(img, 'Center', tuple(centerMass), font, 2, (255, 255, 255), 2)
+        # cv2.putText(img, 'Center', tuple(centerMass), font, 2, (255, 255, 255), 2)
 
         # Distance from each finger defect(finger webbing) to the center mass
         distanceBetweenDefectsToCenter = []
@@ -189,8 +188,8 @@ def recognize_face(img):
     face_locations = face_recognition.face_locations(img, number_of_times_to_upsample=0, model="cnn")
     centerX = None
     centerY = None
-    face_width=None
-    face_height=None
+    face_width = None
+    face_height = None
     for face_location in face_locations:
         # Print the location of each face in this image
         top, right, bottom, left = face_location
@@ -207,3 +206,31 @@ def recognize_face(img):
         break
 
     return img, centerX, centerY, face_width, face_height
+
+
+def detect_skin(img):
+    # Constants for finding range of skin color in YCrCb
+    min_YCrCb = np.array([80, 150, 77], np.uint8)
+    max_YCrCb = np.array([255, 173, 127], np.uint8)
+
+    # Convert image to YCrCb
+    imageYCrCb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+
+    # Find region with skin tone in YCrCb image
+    skinRegion = cv2.inRange(imageYCrCb, min_YCrCb, max_YCrCb)
+
+    # Do contour detection on skin region
+    _, contours, hierarchy, = cv2.findContours(skinRegion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Find the largest contour and draw it
+    largestArea = 0
+    largestAreaIndex = 0
+    for i, c in enumerate(contours):
+        area = cv2.contourArea(c)
+        if area > largestArea:
+            largestArea = area
+            largestAreaIndex = i
+
+    cv2.drawContours(img, contours, largestAreaIndex, (0, 255, 0), 3)
+
+    return img
