@@ -22,10 +22,12 @@ model = None
 output_node = None
 tracker = None
 kalman_filter_array = None
+joint_detections = None
 
 
 def init_cpm_session():
     cpm_model = importlib.import_module('cpm.models.nets.cpm_hand')
+    global joint_detections
     joint_detections = np.zeros(shape=(21, 2))
     os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu_id)
 
@@ -56,7 +58,7 @@ def init_cpm_session():
     sess_config.gpu_options.allow_growth = True
     sess_config.allow_soft_placement = True
     global tf_session
-    tf_session=tf.Session(config=sess_config)
+    tf_session = tf.Session(config=sess_config)
 
     model_path_suffix = os.path.join(FLAGS.network_def,
                                      'input_{}_output_{}'.format(FLAGS.input_size, FLAGS.heatmap_size),
@@ -96,30 +98,6 @@ def init_cpm_session():
     return
 
 
-def trackHandCPM(input_image):
-    test_img = cpm_utils.read_image(input_image, [], FLAGS.input_size, 'CVIMAGE')
-    test_img_resize = cv2.resize(test_img, (FLAGS.input_size, FLAGS.input_size))
-
-    test_img_input = normalize_and_centralize_img(test_img_resize)
-
-    t1 = time.time()
-    predict_heatmap, stage_heatmap_np = tf_session.run([model.current_heatmap,
-                                                  output_node,
-                                                  ],
-                                                 feed_dict={model.input_images: test_img_input}
-                                                 )
-    print('fps: %.2f' % (1 / (time.time() - t1)))
-
-    correct_and_draw_hand(test_img,
-                          cv2.resize(stage_heatmap_np[0], (FLAGS.input_size, FLAGS.input_size)),
-                          kalman_filter_array, tracker, tracker.input_crop_ratio, test_img)
-
-    # Show visualized image
-    # demo_img = visualize_result(test_img, stage_heatmap_np, kalman_filter_array)
-    #cv2.imshow('demo_img', test_img.astype(np.uint8))
-    #cv2.waitKey(1)
-    return test_img.astype(np.uint8)
-
 def normalize_and_centralize_img(img):
     if FLAGS.color_channel == 'GRAY':
         img = np.dot(img[..., :3], [0.299, 0.587, 0.114]).reshape((FLAGS.input_size, FLAGS.input_size, 1))
@@ -131,6 +109,7 @@ def normalize_and_centralize_img(img):
         test_img_input = img - 128.0
         test_img_input = np.expand_dims(test_img_input, axis=0)
     return test_img_input
+
 
 def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale, crop_img):
     global joint_detections
@@ -194,6 +173,7 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
     cv2.putText(full_img, 'Response: {:<.3f}'.format(mean_response_val),
                 org=(20, 20), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=(255, 0, 0))
 
+
 def draw_hand(full_img, joint_coords, is_loss_track):
     if is_loss_track:
         joint_coords = FLAGS.default_hand
@@ -227,7 +207,8 @@ def draw_hand(full_img, joint_coords, is_loss_track):
             limb_color = list(map(lambda x: x + 35 * (limb_num % 4), FLAGS.joint_color_code[color_code_num]))
             cv2.fillConvexPoly(full_img, polygon, color=limb_color)
 
-def trackHandCPM_alt(input_image):
+
+def trackHandCPM(input_image):
     test_img = tracker.tracking_by_joints(input_image, joint_detections=joint_detections)
     crop_full_scale = tracker.input_crop_ratio
     test_img_copy = test_img.copy()
@@ -239,19 +220,19 @@ def trackHandCPM_alt(input_image):
     # Inference
     t1 = time.time()
     stage_heatmap_np = tf_session.run([output_node],
-                                feed_dict={model.input_images: test_img_input})
+                                      feed_dict={model.input_images: test_img_input})
     print('FPS: %.2f' % (1 / (time.time() - t1)))
     print(tracker.loss_track)
 
     local_img = visualize_result(input_image, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale,
                                  test_img_copy)
 
-    #cv2.imshow('local_img', local_img.astype(np.uint8))
-    #cv2.imshow('global_img', full_img.astype(np.uint8))
     return input_image.astype(np.uint8)
+
 
 def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale, crop_img):
     demo_stage_heatmaps = []
+
     if FLAGS.DEMO_TYPE == 'MULTI':
         for stage in range(len(stage_heatmap_np)):
             demo_stage_heatmap = stage_heatmap_np[stage][0, :, :, 0:FLAGS.num_of_joints].reshape(
