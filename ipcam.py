@@ -86,6 +86,10 @@ def main():
             img2, x, y, w, h = imageAnalysis.detect_skin(img)
         show_image(img)
 
-
+"""
+TODO:
+Timer for hand should start as before, but then the tracker should be initialized and object tracking should occur
+If the timer finds no hand for more than 2 seconds, face should be tracked again-->reset tracker
+"""
 if __name__ == "__main__":
     main()
