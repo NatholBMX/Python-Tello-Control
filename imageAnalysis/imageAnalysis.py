@@ -209,6 +209,12 @@ def recognize_face(img):
 
 
 def detect_skin(img):
+    # return values
+    centerX = None
+    centerY = None
+    hand_width = None
+    hand_height = None
+
     # Constants for finding range of skin color in YCrCb
     min_YCrCb = np.array([80, 150, 77], np.uint8)
     max_YCrCb = np.array([255, 173, 127], np.uint8)
@@ -222,15 +228,36 @@ def detect_skin(img):
     # Do contour detection on skin region
     _, contours, hierarchy, = cv2.findContours(skinRegion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Find the largest contour and draw it
-    largestArea = 0
-    largestAreaIndex = 0
-    for i, c in enumerate(contours):
-        area = cv2.contourArea(c)
-        if area > largestArea:
-            largestArea = area
-            largestAreaIndex = i
+    if len(contours)>0:
+        # Find the largest contour and draw it
+        areas = [cv2.contourArea(c) for c in contours]
+        max_index = np.argmax(areas)
 
-    cv2.drawContours(img, contours, largestAreaIndex, (0, 255, 0), 3)
 
-    return img
+        # cv2.drawContours(img, contours, max_index, (0, 255, 0), 3)
+        #print(centerX, centerY)
+
+        #contour approximation
+        epsilon = 0.01 * cv2.arcLength(contours[max_index], True)
+        approx = cv2.approxPolyDP(contours[max_index], epsilon, True)
+        #cv2.drawContours(img, [approx], -1, (0, 255, 0), 3)
+        #print(len(approx))
+        #print(max(areas))
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        corners=cv2.goodFeaturesToTrack(gray_image,maxCorners=10,qualityLevel=0.01,minDistance=1, mask=skinRegion)
+        if corners is not None:
+            corners=np.int0(corners)
+            cv2.drawContours(img, corners, -1, (0, 120, 255), 3)
+        if len(approx)<=20:
+            img, centerX, centerY, hand_width, hand_height = draw_bounding_box_from_contour(img, contours[max_index])
+    return img, centerX, centerY, hand_width, hand_height
+
+
+def draw_bounding_box_from_contour(img, contour):
+    x, y, w, h = cv2.boundingRect(contour)
+    cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 0), 2)
+    pic_height = np.size(img, 0)
+    pic_width = np.size(img, 1)
+    centerX = x + w / 2 - pic_width / 2
+    centerY = y + h / 2 - pic_height / 2
+    return img, centerX, centerY, w, h
