@@ -4,8 +4,6 @@
 import cv2
 import numpy as np
 import urllib.request, urllib.error, urllib.parse
-# from imageAnalysis import imageAnalysis, handTracking
-# from utils import detector_utils
 from imageAnalysis import imageAnalysis
 from imageAnalysis import objectTracker
 import time
@@ -17,6 +15,11 @@ hoststream = 'http://' + host + '/shot.jpg'
 
 USE_WEBCAM = False
 
+# helper function for coordinate calculation
+def computer_center_points(x, y, w, h):
+    centerX = x + w / 2 - width / 2
+    centerY = y + h / 2 - height / 2
+    return centerX, centerY
 
 def get_img_from_stream():
     if USE_WEBCAM:
@@ -81,6 +84,11 @@ def main():
                         t_hand=0
                         objectTracker.reset_tracker()
         show_image(img)
+
+"""
+ToDo:
+Compute centerX and centerY of tracked objects in comparison to pic sizes for tracking
+"""
 
 if __name__ == "__main__":
     main()
