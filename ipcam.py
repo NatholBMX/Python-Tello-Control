@@ -11,7 +11,7 @@ from imageAnalysis import objectTracker
 import time
 
 # host to our video stream
-host = "192.168.1.7:8080"
+host = "192.168.1.9:8080"
 
 hoststream = 'http://' + host + '/shot.jpg'
 
@@ -36,60 +36,51 @@ def show_image(img):
 
 
 def main():
-    # detection_graph, sess = detector_utils.load_inference_graph()
-    # num_hands_detect = 1
-    # score_thresh = 0.3
-    # while True:
-    #     img = get_img_from_stream()
-    #     img6, x, y, _, _ = imageAnalysis.recognize_face(img)
-    #     if x is None:
-    #         boxes, scores = detector_utils.detect_objects(
-    #             img, detection_graph, sess)
-    #         detector_utils.draw_box_on_image(
-    #             num_hands_detect, score_thresh, scores, boxes, img.shape[0], img.shape[1], img)
-    #
-    #     show_image(img6)
 
-    # handTracking.init_cpm_session()
-    # while True:
-    #     img = get_img_from_stream()
-    #     img2 = handTracking.trackHandCPM(img)
-    #     show_image(img2)
-    #     print(handTracking.tracker.loss_track)
+    t_hand = 0
+    t_face = 0
+    current_diff = 0
+    hand_is_tracked=False
 
-    t_hand=0
-    t_face=0
-    current_diff=0
-    find_hand=False
     while True:
         img = get_img_from_stream()
-        if not find_hand:
+        if not hand_is_tracked:
             img2, x, _, _, _ = imageAnalysis.recognize_face(img)
             if x is not None:
-                if t_face==0:
-                    t_face=time.time()
+                if t_face == 0:
+                    t_face = time.time()
                 else:
-                    current_diff=time.time()-t_face
+                    current_diff = time.time() - t_face
             else:
-                if t_hand==0:
-                    t_hand=time.time()
-                    print("T_hand: ", t_hand)
+                if t_hand == 0:
+                    t_hand = time.time()
                     img2, x, y, w, h = imageAnalysis.detect_skin(img)
+                    if x is not None:
+                        bbox = (x, y, w, h)
+                        objectTracker.init_tracker(img, bbox)
                 else:
-                    current_diff=time.time()-t_hand
+                    current_diff = time.time() - t_hand
                     img2, x, y, w, h = imageAnalysis.detect_skin(img)
-                if current_diff>2:
-                    find_hand=True
+                    _, hand_is_tracked=objectTracker.track_object(img)
+                if current_diff > 5:
                     img2, x, y, w, h = imageAnalysis.detect_skin(img)
+                    _, hand_is_tracked=objectTracker.track_object(img)
         else:
-            print("in else")
             img2, x, y, w, h = imageAnalysis.detect_skin(img)
+            _, hand_is_tracked = objectTracker.track_object(img)
+            img2, x2, _, _, _ = imageAnalysis.recognize_face(img)
+            if x2 is not None:
+                if x is not None:
+                    if t_face == 0:
+                        t_face = time.time()
+                    else:
+                        current_diff = time.time() - t_face
+                    if current_diff>5:
+                        hand_is_tracked=False
+                        t_face=0
+                        t_hand=0
+                        objectTracker.reset_tracker()
         show_image(img)
 
-"""
-TODO:
-Timer for hand should start as before, but then the tracker should be initialized and object tracking should occur
-If the timer finds no hand for more than 2 seconds, face should be tracked again-->reset tracker
-"""
 if __name__ == "__main__":
     main()

@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import face_recognition
 
+DEBUGGING = True
+
 
 def auto_canny(image, sigma=0.33):
     # compute the median of the single channel pixel intensities
@@ -193,8 +195,8 @@ def recognize_face(img):
     for face_location in face_locations:
         # Print the location of each face in this image
         top, right, bottom, left = face_location
-        # print("A face is located at pixel location Top: {}, Left: {}, Bottom: {}, Right: {}".format(top, left, bottom, right))
-        cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0), 2)
+        if DEBUGGING:
+            cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0), 2)
 
         pic_height = np.size(img, 0)
         pic_width = np.size(img, 1)
@@ -210,8 +212,8 @@ def recognize_face(img):
 
 def detect_skin(img):
     # return values
-    centerX = None
-    centerY = None
+    x = None
+    y = None
     hand_width = None
     hand_height = None
 
@@ -233,29 +235,22 @@ def detect_skin(img):
         areas = [cv2.contourArea(c) for c in contours]
         max_index = np.argmax(areas)
 
-
-        # cv2.drawContours(img, contours, max_index, (0, 255, 0), 3)
-        #print(centerX, centerY)
-
         #contour approximation
         epsilon = 0.01 * cv2.arcLength(contours[max_index], True)
         approx = cv2.approxPolyDP(contours[max_index], epsilon, True)
-        #cv2.drawContours(img, [approx], -1, (0, 255, 0), 3)
-        #print(len(approx))
-        #print(max(areas))
-        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        corners=cv2.goodFeaturesToTrack(gray_image,maxCorners=10,qualityLevel=0.01,minDistance=1, mask=skinRegion)
-        if corners is not None:
-            corners=np.int0(corners)
-            cv2.drawContours(img, corners, -1, (0, 120, 255), 3)
+
         if len(approx)<=20:
-            img, centerX, centerY, hand_width, hand_height = draw_bounding_box_from_contour(img, contours[max_index])
-    return img, centerX, centerY, hand_width, hand_height
+
+            img, x, y, hand_width, hand_height = draw_bounding_box_from_contour(img, contours[max_index])
+
+        x, y, hand_width, hand_height = cv2.boundingRect(contours[max_index])
+    return img, x, y, hand_width, hand_height
 
 
 def draw_bounding_box_from_contour(img, contour):
     x, y, w, h = cv2.boundingRect(contour)
-    cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 0), 2)
+    if DEBUGGING:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 0), 2)
     pic_height = np.size(img, 0)
     pic_width = np.size(img, 1)
     centerX = x + w / 2 - pic_width / 2
