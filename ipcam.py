@@ -9,17 +9,21 @@ from imageAnalysis import objectTracker
 import time
 
 # host to our video stream
-host = "192.168.1.9:8080"
+host = "192.168.1.13:8080"
 
 hoststream = 'http://' + host + '/shot.jpg'
 
 USE_WEBCAM = False
 
+
 # helper function for coordinate calculation
-def computer_center_points(x, y, w, h):
+def computer_center_points(x, y, w, h, img):
+    height = np.size(img, 0)
+    width = np.size(img, 1)
     centerX = x + w / 2 - width / 2
     centerY = y + h / 2 - height / 2
     return centerX, centerY
+
 
 def get_img_from_stream():
     if USE_WEBCAM:
@@ -39,16 +43,15 @@ def show_image(img):
 
 
 def main():
-
     t_hand = 0
     t_face = 0
     current_diff = 0
-    hand_is_tracked=False
+    hand_is_tracked = False
 
     while True:
         img = get_img_from_stream()
         if not hand_is_tracked:
-            img2, x, _, _, _ = imageAnalysis.recognize_face(img)
+            img2, x, y, w, h = imageAnalysis.recognize_face(img)
             if x is not None:
                 if t_face == 0:
                     t_face = time.time()
@@ -58,37 +61,41 @@ def main():
                 if t_hand == 0:
                     t_hand = time.time()
                     img2, x, y, w, h = imageAnalysis.detect_skin(img)
+
                     if x is not None:
                         bbox = (x, y, w, h)
                         objectTracker.init_tracker(img, bbox)
                 else:
                     current_diff = time.time() - t_hand
                     img2, x, y, w, h = imageAnalysis.detect_skin(img)
-                    _, hand_is_tracked=objectTracker.track_object(img)
+                    _, hand_is_tracked = objectTracker.track_object(img)
                 if current_diff > 5:
                     img2, x, y, w, h = imageAnalysis.detect_skin(img)
-                    _, hand_is_tracked=objectTracker.track_object(img)
+                    _, hand_is_tracked = objectTracker.track_object(img)
+                x, y = computer_center_points(x, y, w, h, img)
         else:
             img2, x, y, w, h = imageAnalysis.detect_skin(img)
+            if x is not None:
+                x, y = computer_center_points(x, y, w, h, img)
             _, hand_is_tracked = objectTracker.track_object(img)
-            img2, x2, _, _, _ = imageAnalysis.recognize_face(img)
+            img2, x2, y2, w2, h2 = imageAnalysis.recognize_face(img)
             if x2 is not None:
                 if x is not None:
                     if t_face == 0:
                         t_face = time.time()
                     else:
                         current_diff = time.time() - t_face
-                    if current_diff>5:
-                        hand_is_tracked=False
-                        t_face=0
-                        t_hand=0
+                    if current_diff > 5:
+                        hand_is_tracked = False
+                        t_face = 0
+                        t_hand = 0
                         objectTracker.reset_tracker()
-        show_image(img)
+                        x=x2
+                        y=y2
+                        w=w2
+                        h=h2
 
-"""
-ToDo:
-Compute centerX and centerY of tracked objects in comparison to pic sizes for tracking
-"""
+        show_image(img)
 
 if __name__ == "__main__":
     main()
