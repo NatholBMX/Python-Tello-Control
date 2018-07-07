@@ -163,8 +163,7 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
             joint_coord[1] += tracker.bbox[2]
             joint_coord_set[joint_num, :] = joint_coord
 
-    print("Joint number nine: ", joint_coord_set[9, :])
-    get_bounding_box_from_joints(full_img, joint_coord_set[1, :], joint_coord_set[17, :])
+    x, y, w, h = get_bounding_box_from_joints(full_img, joint_coord_set[1, :], joint_coord_set[17, :])
     if DEBUGGING:
         draw_hand(full_img, joint_coord_set, tracker.loss_track)
         draw_hand(crop_img, local_joint_coord_set, tracker.loss_track)
@@ -178,6 +177,8 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
     if DEBUGGING:
         cv2.putText(full_img, 'Response: {:<.3f}'.format(mean_response_val),
                     org=(20, 20), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=(255, 0, 0))
+
+    return x, y, w, h
 
 
 def draw_hand(full_img, joint_coords, is_loss_track):
@@ -233,10 +234,11 @@ def trackHandCPM(input_image):
     # print('FPS: %.2f' % (1 / (time.time() - t1)))
     # print(tracker.loss_track)
 
-    local_img = visualize_result(input_image, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale,
-                                 test_img_copy)
+    local_img, x, y, w, h = visualize_result(input_image, stage_heatmap_np, kalman_filter_array, tracker,
+                                             crop_full_scale,
+                                             test_img_copy)
 
-    return input_image.astype(np.uint8)
+    return input_image.astype(np.uint8), x, y, w, h
 
 
 def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale, crop_img):
@@ -261,7 +263,7 @@ def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, c
             (FLAGS.heatmap_size, FLAGS.heatmap_size, FLAGS.num_of_joints))
         last_heatmap = cv2.resize(last_heatmap, (FLAGS.input_size, FLAGS.input_size))
 
-    correct_and_draw_hand(test_img, last_heatmap, kalman_filter_array, tracker, crop_full_scale, crop_img)
+    x, y, w, h = correct_and_draw_hand(test_img, last_heatmap, kalman_filter_array, tracker, crop_full_scale, crop_img)
 
     if FLAGS.DEMO_TYPE == 'MULTI':
         if len(demo_stage_heatmaps) > 3:
@@ -276,7 +278,7 @@ def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, c
                                   axis=1)
 
     else:
-        return crop_img
+        return crop_img, x, y, w, h
 
 
 def get_bounding_box_from_joints(image, joint_coords1, joint_coords2):
