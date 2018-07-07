@@ -17,6 +17,8 @@ import os
 
 from cpm.cpm_config import FLAGS
 
+DEBUGGING = True
+
 tf_session = None
 model = None
 output_node = None
@@ -161,8 +163,11 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
             joint_coord[1] += tracker.bbox[2]
             joint_coord_set[joint_num, :] = joint_coord
 
-    draw_hand(full_img, joint_coord_set, tracker.loss_track)
-    draw_hand(crop_img, local_joint_coord_set, tracker.loss_track)
+    print("Joint number nine: ", joint_coord_set[9, :])
+    get_bounding_box_from_joints(full_img, joint_coord_set[1, :], joint_coord_set[17, :])
+    if DEBUGGING:
+        draw_hand(full_img, joint_coord_set, tracker.loss_track)
+        draw_hand(crop_img, local_joint_coord_set, tracker.loss_track)
     joint_detections = joint_coord_set
 
     if mean_response_val >= 1:
@@ -170,8 +175,9 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
     else:
         tracker.loss_track = True
 
-    cv2.putText(full_img, 'Response: {:<.3f}'.format(mean_response_val),
-                org=(20, 20), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=(255, 0, 0))
+    if DEBUGGING:
+        cv2.putText(full_img, 'Response: {:<.3f}'.format(mean_response_val),
+                    org=(20, 20), fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=(255, 0, 0))
 
 
 def draw_hand(full_img, joint_coords, is_loss_track):
@@ -189,6 +195,9 @@ def draw_hand(full_img, joint_coords, is_loss_track):
             joint_color = list(map(lambda x: x + 35 * (joint_num % 4), FLAGS.joint_color_code[color_code_num]))
             cv2.circle(full_img, center=(int(joint_coords[joint_num][1]), int(joint_coords[joint_num][0])), radius=3,
                        color=joint_color, thickness=-1)
+        cv2.putText(full_img, '{:<.3f}'.format(joint_num),
+                    org=(int(joint_coords[joint_num][1]), int(joint_coords[joint_num][0])),
+                    fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, color=(255, 0, 0))
 
     # Plot limbs
     for limb_num in range(len(FLAGS.limbs)):
@@ -221,8 +230,8 @@ def trackHandCPM(input_image):
     t1 = time.time()
     stage_heatmap_np = tf_session.run([output_node],
                                       feed_dict={model.input_images: test_img_input})
-    print('FPS: %.2f' % (1 / (time.time() - t1)))
-    print(tracker.loss_track)
+    # print('FPS: %.2f' % (1 / (time.time() - t1)))
+    # print(tracker.loss_track)
 
     local_img = visualize_result(input_image, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale,
                                  test_img_copy)
@@ -268,3 +277,15 @@ def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, c
 
     else:
         return crop_img
+
+
+def get_bounding_box_from_joints(image, joint_coords1, joint_coords2):
+    topX = int(min(joint_coords1[1], joint_coords2[1]))
+    topY = int(min(joint_coords1[0], joint_coords2[0]))
+    bottomX = int(max(joint_coords1[1], joint_coords2[1]))
+    bottomY = int(max(joint_coords1[0], joint_coords2[0]))
+    boxWidth = abs(topX - bottomX)
+    boxHeight = abs(topY - bottomY)
+    if DEBUGGING:
+        cv2.rectangle(image, (topX, topY), (bottomX, bottomY), (0, 255, 0), 3)
+    return topX, topY, boxWidth, boxHeight
