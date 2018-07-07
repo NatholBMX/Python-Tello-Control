@@ -26,10 +26,6 @@ def on_press(key):
             key))
 
 
-# with keyboard.Listener(on_press=on_press) as listener:
-#     listener.join()
-
-
 def main():
     drone = tellopy.Tello()
 
@@ -52,7 +48,6 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_LCTRL:
-                            print("ktrc")
                             drone.takeoff()
                         if event.key == pygame.K_w:
                             drone.land()
