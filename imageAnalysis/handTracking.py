@@ -5,14 +5,14 @@ Module for different methos of tracking hands
 """
 
 import tensorflow as tf
-import numpy as np
+import numpy
 from cpm.utils import cpm_utils, tracking_module, utils
 import cv2
 import time
 import math
 import importlib
 import os
-
+import math
 from cpm.cpm_config import FLAGS
 
 DEBUGGING = True
@@ -28,7 +28,7 @@ joint_detections = None
 def init_cpm_session():
     cpm_model = importlib.import_module('cpm.models.nets.cpm_hand')
     global joint_detections
-    joint_detections = np.zeros(shape=(21, 2))
+    joint_detections = numpy.zeros(shape=(21, 2))
     os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu_id)
 
     """ Initial tracker
@@ -80,19 +80,19 @@ def init_cpm_session():
     for variable in tf.global_variables():
         with tf.variable_scope('', reuse=True):
             var = tf.get_variable(variable.name.split(':0')[0])
-            print(variable.name, np.mean(tf_session.run(var)))
+            print(variable.name, numpy.mean(tf_session.run(var)))
 
     global kalman_filter_array
     # Create kalman filters
     if FLAGS.use_kalman:
         kalman_filter_array = [cv2.KalmanFilter(4, 2) for _ in range(FLAGS.num_of_joints)]
         for _, joint_kalman_filter in enumerate(kalman_filter_array):
-            joint_kalman_filter.transitionMatrix = np.array(
+            joint_kalman_filter.transitionMatrix = numpy.array(
                 [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]],
-                np.float32)
-            joint_kalman_filter.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32)
-            joint_kalman_filter.processNoiseCov = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
-                                                           np.float32) * FLAGS.kalman_noise
+                numpy.float32)
+            joint_kalman_filter.measurementMatrix = numpy.array([[1, 0, 0, 0], [0, 1, 0, 0]], numpy.float32)
+            joint_kalman_filter.processNoiseCov = numpy.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+                                                              numpy.float32) * FLAGS.kalman_noise
     else:
         kalman_filter_array = None
     return
@@ -100,21 +100,21 @@ def init_cpm_session():
 
 def normalize_and_centralize_img(img):
     if FLAGS.color_channel == 'GRAY':
-        img = np.dot(img[..., :3], [0.299, 0.587, 0.114]).reshape((FLAGS.input_size, FLAGS.input_size, 1))
+        img = numpy.dot(img[..., :3], [0.299, 0.587, 0.114]).reshape((FLAGS.input_size, FLAGS.input_size, 1))
 
     if FLAGS.normalize_img:
         test_img_input = img / 256.0 - 0.5
-        test_img_input = np.expand_dims(test_img_input, axis=0)
+        test_img_input = numpy.expand_dims(test_img_input, axis=0)
     else:
         test_img_input = img - 128.0
-        test_img_input = np.expand_dims(test_img_input, axis=0)
+        test_img_input = numpy.expand_dims(test_img_input, axis=0)
     return test_img_input
 
 
 def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale, crop_img):
     global joint_detections
-    joint_coord_set = np.zeros((FLAGS.num_of_joints, 2))
-    local_joint_coord_set = np.zeros((FLAGS.num_of_joints, 2))
+    joint_coord_set = numpy.zeros((FLAGS.num_of_joints, 2))
+    local_joint_coord_set = numpy.zeros((FLAGS.num_of_joints, 2))
 
     mean_response_val = 0.0
 
@@ -122,13 +122,13 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
     if kalman_filter_array is not None:
         for joint_num in range(FLAGS.num_of_joints):
             tmp_heatmap = stage_heatmap_np[:, :, joint_num]
-            joint_coord = np.unravel_index(np.argmax(tmp_heatmap),
-                                           (FLAGS.input_size, FLAGS.input_size))
+            joint_coord = numpy.unravel_index(numpy.argmax(tmp_heatmap),
+                                              (FLAGS.input_size, FLAGS.input_size))
             mean_response_val += tmp_heatmap[joint_coord[0], joint_coord[1]]
-            joint_coord = np.array(joint_coord).reshape((2, 1)).astype(np.float32)
+            joint_coord = numpy.array(joint_coord).reshape((2, 1)).astype(numpy.float32)
             kalman_filter_array[joint_num].correct(joint_coord)
             kalman_pred = kalman_filter_array[joint_num].predict()
-            correct_coord = np.array([kalman_pred[0], kalman_pred[1]]).reshape((2))
+            correct_coord = numpy.array([kalman_pred[0], kalman_pred[1]]).reshape((2))
             local_joint_coord_set[joint_num, :] = correct_coord
 
             # Resize back
@@ -144,10 +144,10 @@ def correct_and_draw_hand(full_img, stage_heatmap_np, kalman_filter_array, track
     else:
         for joint_num in range(FLAGS.num_of_joints):
             tmp_heatmap = stage_heatmap_np[:, :, joint_num]
-            joint_coord = np.unravel_index(np.argmax(tmp_heatmap),
-                                           (FLAGS.input_size, FLAGS.input_size))
+            joint_coord = numpy.unravel_index(numpy.argmax(tmp_heatmap),
+                                              (FLAGS.input_size, FLAGS.input_size))
             mean_response_val += tmp_heatmap[joint_coord[0], joint_coord[1]]
-            joint_coord = np.array(joint_coord).astype(np.float32)
+            joint_coord = numpy.array(joint_coord).astype(numpy.float32)
 
             local_joint_coord_set[joint_num, :] = joint_coord
 
@@ -236,7 +236,7 @@ def trackHandCPM(input_image):
                                              crop_full_scale,
                                              test_img_copy)
 
-    return input_image.astype(np.uint8), x, y, w, h
+    return input_image.astype(numpy.uint8), x, y, w, h
 
 
 def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, crop_full_scale, crop_img):
@@ -247,9 +247,9 @@ def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, c
             demo_stage_heatmap = stage_heatmap_np[stage][0, :, :, 0:FLAGS.num_of_joints].reshape(
                 (FLAGS.heatmap_size, FLAGS.heatmap_size, FLAGS.num_of_joints))
             demo_stage_heatmap = cv2.resize(demo_stage_heatmap, (FLAGS.input_size, FLAGS.input_size))
-            demo_stage_heatmap = np.amax(demo_stage_heatmap, axis=2)
-            demo_stage_heatmap = np.reshape(demo_stage_heatmap, (FLAGS.input_size, FLAGS.input_size, 1))
-            demo_stage_heatmap = np.repeat(demo_stage_heatmap, 3, axis=2)
+            demo_stage_heatmap = numpy.amax(demo_stage_heatmap, axis=2)
+            demo_stage_heatmap = numpy.reshape(demo_stage_heatmap, (FLAGS.input_size, FLAGS.input_size, 1))
+            demo_stage_heatmap = numpy.repeat(demo_stage_heatmap, 3, axis=2)
             demo_stage_heatmap *= 255
             demo_stage_heatmaps.append(demo_stage_heatmap)
 
@@ -265,15 +265,16 @@ def visualize_result(test_img, stage_heatmap_np, kalman_filter_array, tracker, c
 
     if FLAGS.DEMO_TYPE == 'MULTI':
         if len(demo_stage_heatmaps) > 3:
-            upper_img = np.concatenate((demo_stage_heatmaps[0], demo_stage_heatmaps[1], demo_stage_heatmaps[2]), axis=1)
-            lower_img = np.concatenate(
+            upper_img = numpy.concatenate((demo_stage_heatmaps[0], demo_stage_heatmaps[1], demo_stage_heatmaps[2]),
+                                          axis=1)
+            lower_img = numpy.concatenate(
                 (demo_stage_heatmaps[3], demo_stage_heatmaps[len(stage_heatmap_np) - 1], crop_img),
                 axis=1)
-            demo_img = np.concatenate((upper_img, lower_img), axis=0)
+            demo_img = numpy.concatenate((upper_img, lower_img), axis=0)
             return demo_img
         else:
-            return np.concatenate((demo_stage_heatmaps[0], demo_stage_heatmaps[len(stage_heatmap_np) - 1], crop_img),
-                                  axis=1)
+            return numpy.concatenate((demo_stage_heatmaps[0], demo_stage_heatmaps[len(stage_heatmap_np) - 1], crop_img),
+                                     axis=1)
 
     else:
         return crop_img, x, y, w, h
@@ -289,3 +290,44 @@ def get_bounding_box_from_joints(image, joint_coords1, joint_coords2):
     if DEBUGGING:
         cv2.rectangle(image, (topX, topY), (bottomX, bottomY), (0, 255, 0), 3)
     return topX, topY, boxWidth, boxHeight
+
+
+def get_distance_between_joints(joint_coords1, joint_coords2):
+    topX = int(min(joint_coords1[1], joint_coords2[1]))
+    topY = int(min(joint_coords1[0], joint_coords2[0]))
+    bottomX = int(max(joint_coords1[1], joint_coords2[1]))
+    bottomY = int(max(joint_coords1[0], joint_coords2[0]))
+
+    distance = math.sqrt((topX - bottomX) * (topX - bottomX) + (topY - bottomY) * (topY - bottomY))
+    return distance
+
+
+def get_gesture(image):
+    image_height = numpy.size(image, 0)
+
+    gesture_list = ["pitch", "fist", "victory"]
+    if not tracker.loss_track:
+        dist_thumb_index = get_distance_between_joints(joint_detections[4, :],
+                                                       joint_detections[8, :])
+        dist_thumb_middle = get_distance_between_joints(joint_detections[4, :],
+                                                        joint_detections[12, :])
+        dist_thumb_ring = get_distance_between_joints(joint_detections[4, :],
+                                                      joint_detections[16, :])
+        dist_thumb_pinky = get_distance_between_joints(joint_detections[4, :],
+                                                       joint_detections[20, :])
+        dist_base_middle = get_distance_between_joints(joint_detections[0, :],
+                                                       joint_detections[12, :])
+        dist_base_ring = get_distance_between_joints(joint_detections[0, :],
+                                                     joint_detections[16, :])
+        dist_base_pinky = get_distance_between_joints(joint_detections[0, :],
+                                                      joint_detections[20, :])
+
+        if dist_thumb_index < 0.15 * image_height and dist_thumb_pinky >= 0.25 * image_height:
+            return gesture_list[0]
+        if (dist_base_middle and dist_base_ring and dist_base_pinky) < 0.2 * image_height:
+            return gesture_list[1]
+        if (dist_base_pinky + 0.1 * image_height and dist_base_ring + 0.1 * image_height) < (
+                dist_thumb_index + 0.1 * image_height and dist_thumb_middle + 0.1 * image_height):
+            return gesture_list[2]
+
+    return
