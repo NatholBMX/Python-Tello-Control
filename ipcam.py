@@ -2,14 +2,14 @@
 # Code Adopted from http://stackoverflow.com/questions/21702477/how-to-parse-mjpeg-http-stream-from-ip-camera
 
 import cv2
-import numpy as np
+import numpy
 import urllib.request, urllib.error, urllib.parse
-from imageAnalysis import imageAnalysis
+from imageAnalysis import imageAnalysis, handTracking
 from imageAnalysis import objectTracker
 import time
 
 # host to our video stream
-host = "192.168.1.13:8080"
+host = "192.168.1.21:8080"
 
 hoststream = 'http://' + host + '/shot.jpg'
 
@@ -18,8 +18,8 @@ USE_WEBCAM = False
 
 # helper function for coordinate calculation
 def computer_center_points(x, y, w, h, img):
-    height = np.size(img, 0)
-    width = np.size(img, 1)
+    height = numpy.size(img, 0)
+    width = numpy.size(img, 1)
     centerX = x + w / 2 - width / 2
     centerY = y + h / 2 - height / 2
     return centerX, centerY
@@ -32,7 +32,7 @@ def get_img_from_stream():
     else:
         # Use urllib to get the image and convert into a cv2 usable format
         imgResp = urllib.request.urlopen(hoststream)
-        imgNp = np.array(bytearray(imgResp.read()), dtype=np.uint8)
+        imgNp = numpy.array(bytearray(imgResp.read()), dtype=numpy.uint8)
         img = cv2.imdecode(imgNp, -1)
     return img
 
@@ -40,6 +40,20 @@ def get_img_from_stream():
 def show_image(img):
     cv2.imshow('IPWebcam', img)
     cv2.waitKey(1)
+
+
+def main2():
+    handTracking.init_cpm_session()
+
+    while True:
+        img = get_img_from_stream()
+        resized_image = cv2.resize(img, (480, 360))
+        img2 = handTracking.trackHandCPM(resized_image)
+
+        gesture=handTracking.get_gesture(resized_image)
+        print(gesture)
+
+        show_image(resized_image)
 
 
 def main():
@@ -90,12 +104,13 @@ def main():
                         t_face = 0
                         t_hand = 0
                         objectTracker.reset_tracker()
-                        x=x2
-                        y=y2
-                        w=w2
-                        h=h2
+                        x = x2
+                        y = y2
+                        w = w2
+                        h = h2
 
         show_image(img)
 
+
 if __name__ == "__main__":
-    main()
+    main2()
