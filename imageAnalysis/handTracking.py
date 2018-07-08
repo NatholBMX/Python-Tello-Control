@@ -4,8 +4,6 @@ Module for different methos of tracking hands
 
 """
 
-import cpm.cpm_visualization_utils
-
 import tensorflow as tf
 import numpy as np
 from cpm.utils import cpm_utils, tracking_module, utils
