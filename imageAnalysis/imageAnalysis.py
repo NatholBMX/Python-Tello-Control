@@ -4,6 +4,8 @@ import face_recognition
 
 DEBUGGING = True
 
+found_face = False
+
 
 def auto_canny(image, sigma=0.33):
     # compute the median of the single channel pixel intensities
@@ -192,6 +194,12 @@ def recognize_face(img):
     centerY = None
     face_width = None
     face_height = None
+
+    global found_face
+    if len(face_locations) >0:
+        found_face=True
+    else:
+        found_face=False
     for face_location in face_locations:
         # Print the location of each face in this image
         top, right, bottom, left = face_location
@@ -230,17 +238,16 @@ def detect_skin(img):
     # Do contour detection on skin region
     _, contours, hierarchy, = cv2.findContours(skinRegion, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    if len(contours)>0:
+    if len(contours) > 0:
         # Find the largest contour and draw it
         areas = [cv2.contourArea(c) for c in contours]
         max_index = np.argmax(areas)
 
-        #contour approximation
+        # contour approximation
         epsilon = 0.01 * cv2.arcLength(contours[max_index], True)
         approx = cv2.approxPolyDP(contours[max_index], epsilon, True)
 
-        if len(approx)<=20:
-
+        if len(approx) <= 20:
             img, x, y, hand_width, hand_height = draw_bounding_box_from_contour(img, contours[max_index])
 
         x, y, hand_width, hand_height = cv2.boundingRect(contours[max_index])

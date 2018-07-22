@@ -17,12 +17,16 @@ from cpm.cpm_config import FLAGS
 
 DEBUGGING = True
 
+# global hand tracking parameters
 tf_session = None
 model = None
 output_node = None
 tracker = None
 kalman_filter_array = None
 joint_detections = None
+
+# list of supported gestures
+gesture_list = ["pitch", "fist", "victory", "thumbs_up"]
 
 
 def init_cpm_session():
@@ -305,8 +309,9 @@ def get_distance_between_joints(joint_coords1, joint_coords2):
 def get_gesture(image):
     image_height = numpy.size(image, 0)
 
-    gesture_list = ["pitch", "fist", "victory"]
     if not tracker.loss_track:
+        dist_thumb_base = get_distance_between_joints(joint_detections[4, :],
+                                                      joint_detections[0, :])
         dist_thumb_index = get_distance_between_joints(joint_detections[4, :],
                                                        joint_detections[8, :])
         dist_thumb_middle = get_distance_between_joints(joint_detections[4, :],
@@ -315,6 +320,8 @@ def get_gesture(image):
                                                       joint_detections[16, :])
         dist_thumb_pinky = get_distance_between_joints(joint_detections[4, :],
                                                        joint_detections[20, :])
+        dist_base_index = get_distance_between_joints(joint_detections[0, :],
+                                                      joint_detections[8, :])
         dist_base_middle = get_distance_between_joints(joint_detections[0, :],
                                                        joint_detections[12, :])
         dist_base_ring = get_distance_between_joints(joint_detections[0, :],
@@ -322,12 +329,17 @@ def get_gesture(image):
         dist_base_pinky = get_distance_between_joints(joint_detections[0, :],
                                                       joint_detections[20, :])
 
+        # print("Dist: ", str(dist_base_index) + " " + str(dist_base_middle) + " " + str(dist_thumb_pinky) + " " + str(
+        #     dist_thumb_ring))
+
         if dist_thumb_index < 0.15 * image_height and dist_thumb_pinky >= 0.25 * image_height:
             return gesture_list[0]
-        if (dist_base_middle and dist_base_ring and dist_base_pinky) < 0.2 * image_height:
-            return gesture_list[1]
-        if (dist_base_pinky + 0.1 * image_height and dist_base_ring + 0.1 * image_height) < (
-                dist_thumb_index + 0.1 * image_height and dist_thumb_middle + 0.1 * image_height):
+        if (dist_base_middle and dist_base_ring and dist_base_pinky and dist_base_index) < dist_thumb_base:
+            if joint_detections[4, 0] < joint_detections[0, 0] and joint_detections[4, 0] < joint_detections[2, 0]:
+                return gesture_list[3]
+            else:
+                return gesture_list[1]
+        if (dist_thumb_pinky and dist_thumb_ring) <= 1.6 * (dist_base_index and dist_base_middle):
             return gesture_list[2]
 
     return
