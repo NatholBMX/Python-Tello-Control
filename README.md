@@ -28,6 +28,10 @@ python telloPyFacetracking.py
 
 Beware that take off and landing has to be done manually.
 
+## Demo for facetracking
+
+![](https://github.com/NatholBMX/Python-Tello-Control/blob/development/images/Facetrack.gif "Face Tracking")
+
 ## Demo for handtracking
 
 ![](https://github.com/NatholBMX/Python-Tello-Control/blob/development/images/Jedi.gif "Jedi")
