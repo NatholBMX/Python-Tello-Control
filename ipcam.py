@@ -6,10 +6,11 @@ import numpy
 import urllib.request, urllib.error, urllib.parse
 from imageAnalysis import imageAnalysis, handTracking
 from imageAnalysis import objectTracker
+from imageAnalysis import obectDetection
 import time
 
 # host to our video stream
-host = "192.168.1.21:8080"
+host = "192.168.1.70:8080"
 
 hoststream = 'http://' + host + '/shot.jpg'
 
@@ -42,16 +43,54 @@ def show_image(img):
     cv2.waitKey(1)
 
 
+def set_gesture_counter(gesture, gesture_counter):
+    gesture_index = handTracking.gesture_list.index(gesture)
+
+    temp_counter = gesture_counter[gesture_index] + 1
+    gesture_counter = [0] * len(handTracking.gesture_list)
+    gesture_counter[gesture_index] = temp_counter
+
+    return gesture_counter
+
+def main3():
+    while True:
+        img=get_img_from_stream()
+        obectDetection.detect_objects2(img)
+        show_image(img)
+
 def main2():
     handTracking.init_cpm_session()
+    gesture_counter = [0] * len(handTracking.gesture_list)
+    track_face=False
 
     while True:
         img = get_img_from_stream()
         resized_image = cv2.resize(img, (480, 360))
-        img2 = handTracking.trackHandCPM(resized_image)
+        if not imageAnalysis.found_face:
+            img2 = handTracking.trackHandCPM(resized_image)
 
-        gesture=handTracking.get_gesture(resized_image)
-        print(gesture)
+            gesture=handTracking.get_gesture(resized_image)
+        if gesture == "pitch":
+            gesture_counter = set_gesture_counter("pitch", gesture_counter)
+            if gesture_counter[0] >= 10:
+                print("Land drone!")
+        elif gesture=="fist":
+            gesture_counter = set_gesture_counter("fist", gesture_counter)
+            if gesture_counter[1] >= 10:
+                print("Take off")
+        elif gesture=="victory":
+            gesture_counter = set_gesture_counter("victory", gesture_counter)
+            if gesture_counter[2] >=10:
+                track_face=not track_face
+                gesture_counter=set_gesture_counter("pitch", gesture_counter)
+                print("Tracking face: ",track_face)
+        elif gesture=="thumbs_up":
+            gesture_counter = set_gesture_counter("thumbs_up", gesture_counter)
+
+        if track_face:
+            img2=imageAnalysis.recognize_face(resized_image)
+
+        print(gesture_counter)
 
         show_image(resized_image)
 
@@ -113,4 +152,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main2()
+    main3()
