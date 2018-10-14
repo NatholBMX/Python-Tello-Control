@@ -2,18 +2,11 @@ import sys
 import traceback
 import tellopy
 import av
-import cv2.cv2 as cv2  # for avoidance of pylint error
 import numpy
 import time
 from imageAnalysis import handTracking
 import pygame
-
-# image resize parameters
-width = 480
-height = 360
-
-# flag for saving video
-SAVE_VIDEO = True
+from utils.params import *
 
 
 def show_image(img):
@@ -39,14 +32,18 @@ def on_press(key):
 
 
 def main():
+    # init hand tracking model and the drone
     handTracking.init_cpm_session()
     drone = tellopy.Tello()
 
     try:
+        # init Pygame window and connect the drone
         pygame.init()
         pygame.display.set_mode((1, 1))
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter('output.avi', fourcc, 15.0, (960, 720))
+
+        if SAVE_VIDEO:
+            video_output = cv2.VideoWriter(VIDEO_FILENAME, VIDEO_CODEC, 15.0, (960, 720))
+
         drone.connect()
         drone.wait_for_connection(60.0)
 
@@ -59,6 +56,7 @@ def main():
                 if 0 < frame_skip:
                     frame_skip = frame_skip - 1
                     continue
+                # manuall controls for take off and landing
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_LCTRL:
@@ -69,18 +67,19 @@ def main():
                 start_time = time.time()
 
                 img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+
                 if SAVE_VIDEO:
-                    out.write(img)
-                resized_image = cv2.resize(img, (width, height))
+                    video_output.write(img)
+                resized_image = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT))
 
                 img2, x, y, w, h = handTracking.trackHandCPM(resized_image)
                 if not handTracking.tracker.loss_track:
                     centerX, centerY = computer_center_points(x, y, w, h, resized_image)
-                    throttleValue = -centerY / (height / 2)
-                    yawValue = centerX / (width / 2)
-                    if w * h >= 0.01 * width * height:
+                    throttleValue = -centerY / (IMAGE_HEIGHT / 2)
+                    yawValue = centerX / (IMAGE_WIDTH / 2)
+                    if w * h >= 0.01 * IMAGE_WIDTH * IMAGE_HEIGHT:
                         pitchValue = -0.2
-                    elif w * h < 0.008 * width * height:
+                    elif w * h < 0.008 * IMAGE_WIDTH * IMAGE_HEIGHT:
                         pitchValue = 0.2
                 else:
                     throttleValue = 0
@@ -101,6 +100,7 @@ def main():
         traceback.print_exception(exc_type, exc_value, exc_traceback)
         print(ex)
     finally:
+        # safely land drone
         drone.quit()
         cv2.destroyAllWindows()
 

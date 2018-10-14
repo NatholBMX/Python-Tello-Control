@@ -2,14 +2,11 @@ import sys
 import traceback
 import tellopy
 import av
-import cv2.cv2 as cv2  # for avoidance of pylint error
 import numpy
 import time
 from imageAnalysis import imageAnalysis
 import pygame
-
-width = 480
-height = 360
+from utils.params import *
 
 
 def show_image(img):
@@ -52,17 +49,17 @@ def main():
                         if event.key == pygame.K_w:
                             drone.land()
                 img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-                resized_image = cv2.resize(img, (width, height))
+                resized_image = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT))
 
                 _, centerX, centerY, faceWidth, faceHeight = imageAnalysis.recognize_face(resized_image)
 
                 if centerX is not None:
-                    throttleValue = -centerY / (height / 2)
-                    yawValue = centerX / (width / 2)
+                    throttleValue = -centerY / (IMAGE_HEIGHT / 2)
+                    yawValue = centerX / (IMAGE_WIDTH / 2)
                     pitchValue = 0
-                    if faceWidth * faceHeight > 0.2 * width * height:
+                    if faceWidth * faceHeight > 0.2 * IMAGE_WIDTH * IMAGE_HEIGHT:
                         pitchValue = -0.2
-                    elif faceWidth * faceHeight < 0.05 * width * height:
+                    elif faceWidth * faceHeight < 0.05 * IMAGE_WIDTH * IMAGE_HEIGHT:
                         pitchValue = 0.2
                     drone.set_throttle(throttleValue)
                     drone.set_yaw(yawValue)
@@ -84,6 +81,7 @@ def main():
         traceback.print_exception(exc_type, exc_value, exc_traceback)
         print(ex)
     finally:
+        # safely land drone
         drone.land()
         time.sleep(5)
         drone.quit()
