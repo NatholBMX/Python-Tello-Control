@@ -2,7 +2,7 @@
 *.h264
 *.mp4
 /temp
-#/.idea
+/.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
