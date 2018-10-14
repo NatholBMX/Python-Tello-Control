@@ -1,8 +1,10 @@
 *.pyc
 *.h264
 *.mp4
+*.avi
 /temp
 /.idea
+/cpm/models/weights/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
