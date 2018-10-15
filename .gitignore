@@ -5,6 +5,7 @@
 /temp
 /.idea
 /cpm/models/weights/*
+/personal_face
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

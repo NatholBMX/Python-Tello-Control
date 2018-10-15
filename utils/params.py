@@ -12,3 +12,7 @@ IMAGE_HEIGHT = 360
 SAVE_VIDEO = True
 VIDEO_FILENAME = "output.avi"
 VIDEO_CODEC = cv2.VideoWriter_fourcc(*'mp4v')
+
+# Personalize face recognition
+PERSONAL_FACE_RECOGNITION = True
+PERSONAL_FACE_LOCATION = "personal_face/nikolaj.png"

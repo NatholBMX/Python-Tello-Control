@@ -66,7 +66,7 @@ def main2():
     while True:
         img = get_img_from_stream()
         resized_image = cv2.resize(img, (480, 360))
-        if not imageAnalysis.found_face:
+        if not imageAnalysis.FOUND_FACE:
             img2 = handTracking.trackHandCPM(resized_image)
 
             gesture=handTracking.get_gesture(resized_image)

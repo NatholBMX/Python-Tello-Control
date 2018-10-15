@@ -1,38 +1,53 @@
 import cv2
 import numpy as np
 import face_recognition
+from utils.params import *
 
 DEBUGGING = True
 
-found_face = False
+FOUND_FACE = False
+
+# personal face encoding
+PERSONAL_ENCODING = []
+
+
+def learn_personal_face():
+    global PERSONAL_ENCODING
+    face_image = face_recognition.load_image_file(PERSONAL_FACE_LOCATION)
+    encoding = face_recognition.face_encodings(face_image)[0]
+    PERSONAL_ENCODING=encoding
 
 
 def recognize_face(img):
     face_locations = face_recognition.face_locations(img, number_of_times_to_upsample=0, model="cnn")
+    face_encodings = face_recognition.face_encodings(img, face_locations)
     centerX = None
     centerY = None
     face_width = None
     face_height = None
 
-    global found_face
+    global FOUND_FACE
     if len(face_locations) > 0:
-        found_face = True
+        FOUND_FACE = True
     else:
-        found_face = False
-    for face_location in face_locations:
+        FOUND_FACE = False
+    for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+        matches = face_recognition.compare_faces(PERSONAL_ENCODING, face_encoding)
         # Print the location of each face in this image
-        top, right, bottom, left = face_location
+        # top, right, bottom, left = face_location
         if DEBUGGING:
             cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0), 2)
 
-        pic_height = np.size(img, 0)
-        pic_width = np.size(img, 1)
-        face_width = right - left
-        face_height = bottom - top
+        if True in matches:
+            first_match_index = matches.index(True)
+            pic_height = np.size(img, 0)
+            pic_width = np.size(img, 1)
+            face_width = right - left
+            face_height = bottom - top
 
-        centerX = left + face_width / 2 - pic_width / 2
-        centerY = top + face_height / 2 - pic_height / 2
-        break
+            centerX = left + face_width / 2 - pic_width / 2
+            centerY = top + face_height / 2 - pic_height / 2
+
 
     return img, centerX, centerY, face_width, face_height
 

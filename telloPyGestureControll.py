@@ -148,7 +148,7 @@ def main():
 
                 resized_image = cv2.resize(img, (width, height))
 
-                if not imageAnalysis.found_face:
+                if not imageAnalysis.FOUND_FACE:
                     gesture = handTracking.get_gesture(resized_image)
                 # print("Gesture: "+str(gesture)+" Counter: "+str(gesture_counter))
 
