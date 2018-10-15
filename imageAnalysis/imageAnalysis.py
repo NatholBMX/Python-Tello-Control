@@ -15,7 +15,7 @@ def learn_personal_face():
     global PERSONAL_ENCODING
     face_image = face_recognition.load_image_file(PERSONAL_FACE_LOCATION)
     encoding = face_recognition.face_encodings(face_image)[0]
-    PERSONAL_ENCODING = encoding
+    PERSONAL_ENCODING.append(encoding)
 
 
 def recognize_face(img):
@@ -36,7 +36,7 @@ def recognize_face(img):
         if PERSONAL_FACE_RECOGNITION:
             matches = face_recognition.compare_faces(PERSONAL_ENCODING, face_encoding)
         else:
-            matches = True
+            matches=[True,]
         # Print the location of each face in this image
         # top, right, bottom, left = face_location
         if DEBUGGING:
