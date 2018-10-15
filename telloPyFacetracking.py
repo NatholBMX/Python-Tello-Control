@@ -24,7 +24,11 @@ def on_press(key):
 
 
 def main():
+    # initialize drone
     drone = tellopy.Tello()
+
+    if PERSONAL_FACE_RECOGNITION:
+        imageAnalysis.learn_personal_face()
 
     try:
         pygame.init()

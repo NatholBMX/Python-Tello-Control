@@ -15,7 +15,7 @@ def learn_personal_face():
     global PERSONAL_ENCODING
     face_image = face_recognition.load_image_file(PERSONAL_FACE_LOCATION)
     encoding = face_recognition.face_encodings(face_image)[0]
-    PERSONAL_ENCODING=encoding
+    PERSONAL_ENCODING = encoding
 
 
 def recognize_face(img):
@@ -32,14 +32,17 @@ def recognize_face(img):
     else:
         FOUND_FACE = False
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-        matches = face_recognition.compare_faces(PERSONAL_ENCODING, face_encoding)
+
+        if PERSONAL_FACE_RECOGNITION:
+            matches = face_recognition.compare_faces(PERSONAL_ENCODING, face_encoding)
+        else:
+            matches = True
         # Print the location of each face in this image
         # top, right, bottom, left = face_location
         if DEBUGGING:
             cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0), 2)
 
         if True in matches:
-            first_match_index = matches.index(True)
             pic_height = np.size(img, 0)
             pic_width = np.size(img, 1)
             face_width = right - left
@@ -47,7 +50,7 @@ def recognize_face(img):
 
             centerX = left + face_width / 2 - pic_width / 2
             centerY = top + face_height / 2 - pic_height / 2
-
+            break
 
     return img, centerX, centerY, face_width, face_height
 
